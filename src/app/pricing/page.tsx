@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { getUser, isSubscribed } from "@/lib/auth";
 import { PLANS } from "@/lib/plans";
-import { demoPayments } from "@/lib/stripe";
+import { demoPayments, stripe } from "@/lib/stripe";
 import { paddle, paddleEnv, paddlePrice } from "@/lib/paddle";
 import PaddleCheckout from "@/components/PaddleCheckout";
 import { getT } from "@/lib/i18n/server";
@@ -9,16 +9,21 @@ import { getT } from "@/lib/i18n/server";
 export const dynamic = "force-dynamic";
 
 
-export default async function Pricing({ searchParams }: { searchParams: { canceled?: string } }) {
+export default async function Pricing({ searchParams }: { searchParams: { canceled?: string; unavailable?: string } }) {
   const user = await getUser();
   const subscribed = isSubscribed(user);
   const t = getT();
+  // لا شركة دفع مفعّلة بعد: نعرض «قريبًا» بدل زر يقود إلى خطأ
+  const payable = demoPayments || !!stripe || paddle;
   const FEATURES = [t("pricing.f1"), t("pricing.f2"), t("pricing.f3"), t("pricing.f4")];
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-16">
       <h1 className="text-center text-4xl font-extrabold">{t("pricing.title")}</h1>
       <p className="mt-3 text-center text-neutral-400">{t("pricing.subtitle")}</p>
+      {(searchParams.unavailable || !payable) && (
+        <p className="mx-auto mt-4 max-w-xl rounded-md bg-amber-500/10 p-3 text-center text-sm text-amber-300">{t("pricing.unavailable")}</p>
+      )}
       {searchParams.canceled && <p className="mt-4 text-center text-yellow-400">{t("pricing.canceled")}</p>}
       {demoPayments && (
         <p className="mx-auto mt-4 max-w-xl rounded-md bg-yellow-500/10 p-3 text-center text-sm text-yellow-300">
@@ -37,6 +42,8 @@ export default async function Pricing({ searchParams }: { searchParams: { cancel
             <div className="mt-auto">
               {subscribed ? (
                 <Link href="/account" className="btn-ghost w-full">{t("pricing.subscribed")}</Link>
+              ) : !payable ? (
+                <button disabled className="btn-ghost w-full cursor-not-allowed opacity-60">{t("pricing.soon")}</button>
               ) : user && paddle && paddlePrice(p.id) ? (
                 <PaddleCheckout priceId={paddlePrice(p.id)!} token={process.env.PADDLE_CLIENT_TOKEN!} env={paddleEnv} email={user.email} userId={user.id} />
               ) : user ? (

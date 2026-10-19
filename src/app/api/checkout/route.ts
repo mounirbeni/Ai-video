@@ -17,7 +17,7 @@ export async function POST(req: Request) {
   if (!plan) return NextResponse.json({ error: "Invalid plan" }, { status: 400 });
 
   if (!stripe) {
-    if (!demoPayments) return NextResponse.json({ error: "Payments are not configured" }, { status: 503 });
+    if (!demoPayments) return NextResponse.redirect(`${base}/pricing?unavailable=1`, 303);
     await db.user.update({
       where: { id: user.id },
       data: {
