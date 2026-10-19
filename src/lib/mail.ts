@@ -11,6 +11,16 @@ const transport = mailConfigured
     })
   : null;
 
+const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+
+// الروابط تُحوَّل سطرًا سطرًا قبل الدمج حتى لا يلتصق الرابط بالسطر التالي
+function toHtml(text: string) {
+  return text
+    .split("\n")
+    .map((line) => esc(line).replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1">$1</a>'))
+    .join("<br>");
+}
+
 export async function sendMail(to: string, subject: string, text: string) {
   if (!transport) {
     // بدون SMTP: تُطبع الرسالة في سجل الخادم (للتطوير)
@@ -22,6 +32,6 @@ export async function sendMail(to: string, subject: string, text: string) {
     to,
     subject,
     text,
-    html: `<div dir="rtl" style="font-family:sans-serif;line-height:1.8">${text.replace(/\n/g, "<br>").replace(/(https?:\/\/\S+)/g, '<a href="$1">$1</a>')}</div>`,
+    html: `<div dir="rtl" style="font-family:sans-serif;line-height:1.8">${toHtml(text)}</div>`,
   });
 }
