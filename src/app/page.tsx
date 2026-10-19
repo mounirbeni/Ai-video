@@ -53,6 +53,19 @@ export default async function Home() {
       <Row title={t("row.movies")} items={movies} />
       <Row title={t("row.series")} items={series} />
       <Row title={t("row.free")} items={free} />
+      <section className="mx-auto mt-14 max-w-7xl px-4">
+        <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-neutral-900 p-6 sm:p-10">
+          <div className="pointer-events-none absolute -end-20 -top-24 h-64 w-64 rounded-full bg-brand-violet/30 blur-3xl" />
+          <div className="pointer-events-none absolute -bottom-24 end-40 h-56 w-56 rounded-full bg-brand-cyan/20 blur-3xl" />
+          <div className="relative flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="text-2xl font-extrabold sm:text-3xl">{t("support.homeTitle")}</h2>
+              <p className="mt-2 text-neutral-400">{t("support.homeText")}</p>
+            </div>
+            <Link href="/support" className="btn-primary">{t("support.nav")}</Link>
+          </div>
+        </div>
+      </section>
     </>
   );
 }

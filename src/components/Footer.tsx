@@ -9,6 +9,7 @@ export default function Footer() {
     { href: "/browse?type=MOVIE", label: t("nav.movies") },
     { href: "/browse?type=SERIES", label: t("nav.series") },
     { href: "/pricing", label: t("footer.pricing") },
+    { href: "/support", label: t("support.nav") },
     { href: "/terms", label: t("footer.terms") },
     { href: "/privacy", label: t("footer.privacy") },
   ];

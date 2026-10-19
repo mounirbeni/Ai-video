@@ -33,14 +33,20 @@ export default async function Account({ searchParams }: { searchParams: { succes
         </div>
       )}
       <div className="card space-y-3">
+        {user.supporterSince && (
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-brand-violet/25 to-brand-cyan/25 px-3 py-1 text-sm text-white ring-1 ring-brand-violet/40">✦ {t("account.supporter")}</span>
+        )}
         <p><span className="text-neutral-400">{t("account.name")} </span>{user.name}</p>
         <p><span className="text-neutral-400">{t("account.email")} </span>{user.email}</p>
         <p><span className="text-neutral-400">{t("account.status")} </span>
-          <span className={sub ? "text-green-400" : "text-yellow-400"}>{user.role === "ADMIN" ? t("account.admin") : status(user.subscriptionStatus)}</span>
+          <span className={sub ? "text-green-400" : "text-yellow-400"}>{user.role === "ADMIN" ? t("account.admin") : sub && !["active", "trialing"].includes(user.subscriptionStatus) ? t("account.supporterAccess") : status(user.subscriptionStatus)}</span>
         </p>
         {plan && <p><span className="text-neutral-400">{t("account.plan")} </span>{t(plan.nameKey)}</p>}
         {user.currentPeriodEnd && <p><span className="text-neutral-400">{t("account.renews")} </span>{user.currentPeriodEnd.toLocaleDateString(t.locale)}</p>}
-        <div className="flex gap-3 pt-3">
+        {user.accessUntil && user.accessUntil > new Date() && (
+          <p><span className="text-neutral-400">{t("account.accessUntil")} </span>{user.accessUntil.toLocaleDateString(t.locale)}</p>
+        )}
+        <div className="flex flex-wrap gap-3 pt-3">
           {!sub && <Link href="/pricing" className="btn-primary">{t("account.subscribe")}</Link>}
           <form action={logout}><button className="btn-ghost">{t("account.logout")}</button></form>
           {((stripe && user.stripeCustomerId) || (paddle && user.paddleCustomerId)) && (

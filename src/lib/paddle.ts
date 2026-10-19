@@ -1,5 +1,5 @@
 import crypto from "node:crypto";
-import { PLANS, type PlanId } from "./plans";
+import { PLANS, SUPPORT_TIERS, type PlanId, type SupportTierId } from "./plans";
 
 // Paddle Billing — بائع رسمي (Merchant of Record) يدعم البائعين من المغرب
 export const paddleEnv = process.env.PADDLE_ENV === "production" ? "production" : "sandbox";
@@ -12,6 +12,14 @@ export function paddlePrice(plan: PlanId) {
 
 export function planForPrice(priceId?: string): PlanId | undefined {
   return (Object.keys(PLANS) as PlanId[]).find((p) => paddlePrice(p) === priceId);
+}
+
+export function supportPrice(tier: SupportTierId) {
+  return process.env[SUPPORT_TIERS[tier].paddlePriceEnv] || null;
+}
+
+export function tierForPrice(priceId?: string): SupportTierId | undefined {
+  return (Object.keys(SUPPORT_TIERS) as SupportTierId[]).find((t) => supportPrice(t) === priceId);
 }
 
 export async function paddleApi<T>(path: string, init?: RequestInit): Promise<T> {

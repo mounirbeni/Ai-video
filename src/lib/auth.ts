@@ -42,6 +42,7 @@ export type SessionUser = NonNullable<Awaited<ReturnType<typeof getUser>>>;
 export function isSubscribed(user: SessionUser | null) {
   if (!user) return false;
   if (user.role === "ADMIN") return true;
+  if (user.accessUntil && user.accessUntil > new Date()) return true;
   const ok = user.subscriptionStatus === "active" || user.subscriptionStatus === "trialing";
   return ok && (!user.currentPeriodEnd || user.currentPeriodEnd > new Date());
 }

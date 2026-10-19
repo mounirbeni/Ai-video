@@ -29,8 +29,8 @@ function loadPaddle(token: string, env: string) {
 }
 
 export default function PaddleCheckout({
-  priceId, token, env, email, userId,
-}: { priceId: string; token: string; env: string; email: string; userId: string }) {
+  priceId, token, env, email, userId, label, successPath = "/account?success=1", className = "btn-primary w-full",
+}: { priceId: string; token: string; env: string; email: string; userId: string; label?: string; successPath?: string; className?: string }) {
   const [busy, setBusy] = useState(false);
   const t = useT();
   useEffect(() => { loadPaddle(token, env).catch(() => {}); }, [token, env]);
@@ -43,12 +43,12 @@ export default function PaddleCheckout({
         items: [{ priceId, quantity: 1 }],
         customer: { email },
         customData: { userId },
-        settings: { displayMode: "overlay", locale: t.locale, successUrl: `${location.origin}/account?success=1` },
+        settings: { displayMode: "overlay", locale: t.locale, successUrl: `${location.origin}${successPath}` },
       });
     } finally {
       setBusy(false);
     }
   }
 
-  return <button type="button" onClick={open} disabled={busy} className="btn-primary w-full">{t("pricing.subscribe")}</button>;
+  return <button type="button" onClick={open} disabled={busy} className={className}>{label ?? t("pricing.subscribe")}</button>;
 }

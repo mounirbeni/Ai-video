@@ -20,6 +20,7 @@ export default async function Header() {
           <Link href="/browse?type=MOVIE" className="hover:text-white">{t("nav.movies")}</Link>
           <Link href="/browse?type=SERIES" className="hover:text-white">{t("nav.series")}</Link>
           <Link href="/pricing" className="hover:text-white">{t("nav.subscribe")}</Link>
+          <Link href="/support" className="hover:text-white">{t("support.nav")}</Link>
         </nav>
         <div className="ms-auto flex items-center gap-2 text-sm sm:gap-3">
           <form action="/browse" className="hidden md:block">

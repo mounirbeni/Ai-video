@@ -21,11 +21,24 @@ model User {
   subscriptionStatus String    @default("none") // none | active | trialing | past_due | canceled
   subscriptionPlan   String?
   currentPeriodEnd   DateTime?
+  accessUntil        DateTime? // أيام مشاهدة مُهداة مع باقات الدعم (مستقلة عن الاشتراك)
+  supporterSince     DateTime?
   emailVerified      DateTime?
   createdAt          DateTime  @default(now())
   progress           WatchProgress[]
   tokens             AuthToken[]
   streams            ActiveStream[]
+  supports           Support[]
+}
+
+// دفعات الدعم لمرة واحدة؛ المعرّف هو رقم معاملة Paddle فلا تُحتسب الدفعة مرتين عند إعادة إرسال الإشعار
+model Support {
+  id          String   @id
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tier        String
+  amountCents Int
+  createdAt   DateTime @default(now())
 }
 
 // الأجهزة التي تشاهد حاليًا — لمنع مشاركة الحساب
