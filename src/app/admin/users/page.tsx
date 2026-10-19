@@ -18,6 +18,9 @@ export default async function Users() {
               <tr key={u.id}>
                 <td className="p-3">{u.name}{u.role === "ADMIN" && <span className="ms-2 text-brand">مدير</span>}</td>
                 <td className="p-3" dir="ltr">{u.email}</td>
+                {u.role === "ADMIN" ? (
+                  <td className="p-3 text-green-400" colSpan={3}>وصول كامل دائم (لا يحتاج اشتراكًا)</td>
+                ) : (<>
                 <td className="p-3">{u.subscriptionStatus}{u.subscriptionPlan && ` (${u.subscriptionPlan})`}</td>
                 <td className="p-3">{u.currentPeriodEnd?.toLocaleDateString("ar") ?? "—"}</td>
                 <td className="p-3">
@@ -26,6 +29,7 @@ export default async function Users() {
                     <button className="btn-ghost py-1">تطبيق</button>
                   </form>
                 </td>
+                </>)}
               </tr>
             ))}
           </tbody>

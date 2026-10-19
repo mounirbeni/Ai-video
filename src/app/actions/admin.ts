@@ -71,7 +71,8 @@ export async function deleteEpisode(id: string) {
 
 export async function setSubscription(userId: string, f: FormData) {
   await requireAdmin();
-  const days = int(f, "days") ?? 0;
+  const days = Math.min(int(f, "days") ?? 0, 3650); // حد أقصى 10 سنوات
+  if ((await db.user.findUnique({ where: { id: userId } }))?.role === "ADMIN") return;
   await db.user.update({
     where: { id: userId },
     data: days > 0
