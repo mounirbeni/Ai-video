@@ -11,7 +11,10 @@ export default async function Header() {
   return (
     <header className="sticky top-0 z-40 border-b border-white/5 bg-neutral-950/80 backdrop-blur" style={{ paddingTop: "env(safe-area-inset-top)" }}>
       <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 py-3 sm:gap-6">
-        <Link href="/" className="text-2xl font-extrabold text-brand">{t("brand")}</Link>
+        <Link href="/" className="flex items-center gap-2" aria-label={t("brand")}>
+          <img src="/logo-mark.png" alt="" width={32} height={32} className="h-8 w-8" />
+          <span className="text-gradient font-logo text-lg tracking-[0.2em]" dir="ltr">NEXORA</span>
+        </Link>
         <nav className="hidden gap-5 text-sm text-neutral-300 sm:flex">
           <Link href="/" className="hover:text-white">{t("nav.home")}</Link>
           <Link href="/browse?type=MOVIE" className="hover:text-white">{t("nav.movies")}</Link>

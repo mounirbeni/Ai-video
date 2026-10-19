@@ -3,12 +3,13 @@
 @tailwind utilities;
 
 html { -webkit-tap-highlight-color: transparent; }
-body { @apply bg-neutral-950 text-neutral-100 antialiased; overscroll-behavior-y: none; }
+body { @apply bg-neutral-950 text-neutral-100 antialiased; background-image: radial-gradient(60rem 30rem at 50% -10rem, rgba(124,92,255,.12), transparent); overscroll-behavior-y: none; }
 /* 16px على الهاتف يمنع iOS من تكبير الصفحة عند الكتابة */
 input, textarea, select { font-size: 16px; }
 @media (min-width: 640px) { input, textarea, select { font-size: inherit; } }
-.btn { @apply inline-flex items-center justify-center gap-2 rounded-md px-5 py-2.5 font-semibold transition disabled:opacity-50; }
-.btn-primary { @apply btn bg-brand text-white hover:bg-brand-dark; }
+.btn { @apply inline-flex whitespace-nowrap items-center justify-center gap-2 rounded-md px-5 py-2.5 font-semibold transition disabled:opacity-50; }
+.btn-primary { @apply btn bg-gradient-to-r from-brand-violet via-brand-blue to-brand-cyan text-white shadow-[0_0_18px_-4px_rgba(124,92,255,.7)] hover:brightness-110; }
+.text-gradient { @apply bg-gradient-to-r from-white via-[#c9c2ff] to-brand-violet bg-clip-text text-transparent; }
 .btn-ghost { @apply btn bg-white/10 text-white hover:bg-white/20; }
 .input { @apply w-full rounded-md border border-white/10 bg-neutral-900 px-3 py-2.5 text-white outline-none focus:border-brand; }
 .label { @apply mb-1 block text-sm text-neutral-400; }

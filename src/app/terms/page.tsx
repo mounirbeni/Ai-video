@@ -2,7 +2,7 @@ import LegalPage from "@/components/LegalPage";
 import { getLocale } from "@/lib/i18n/server";
 
 export function generateMetadata() {
-  return { title: getLocale() === "ar" ? "شروط الاستخدام — منصتي" : "Terms of Use — Minassati" };
+  return { title: getLocale() === "ar" ? "شروط الاستخدام — Nexora" : "Terms of Use — Nexora" };
 }
 
 // نموذج عام — راجعه مع مختص قانوني وعدّله بحسب بلدك ونشاطك

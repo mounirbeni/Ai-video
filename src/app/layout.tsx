@@ -21,7 +21,7 @@ export function generateMetadata(): Metadata {
 }
 
 export const viewport: Viewport = {
-  themeColor: "#0a0a0a",
+  themeColor: "#03040c",
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
@@ -34,7 +34,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
-          href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Michroma&display=swap"
           rel="stylesheet"
         />
       </head>
@@ -55,6 +55,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <LangSwitch className="hover:text-white" />
               </Suspense>
             </div>
+            <p className="mb-1 font-logo text-xs tracking-[0.3em] text-neutral-400">{t("tagline").toUpperCase()}</p>
             © {new Date().getFullYear()} {t("brand")} — {t("footer.rights")}
           </footer>
         </I18nProvider>

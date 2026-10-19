@@ -2,7 +2,7 @@ import LegalPage from "@/components/LegalPage";
 import { getLocale } from "@/lib/i18n/server";
 
 export function generateMetadata() {
-  return { title: getLocale() === "ar" ? "سياسة الخصوصية — منصتي" : "Privacy Policy — Minassati" };
+  return { title: getLocale() === "ar" ? "سياسة الخصوصية — Nexora" : "Privacy Policy — Nexora" };
 }
 
 // نموذج عام — راجعه مع مختص قانوني وعدّله بحسب بلدك ونشاطك

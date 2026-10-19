@@ -1,7 +1,8 @@
 // قاموس الواجهة: الإنجليزية افتراضية، والعربية اختيارية. أضف المفتاح في اللغتين معًا.
 export const en = {
-  brand: "Minassati",
-  "meta.title": "Minassati — Original Movies & Series",
+  brand: "Nexora",
+  tagline: "Stories Beyond Reality",
+  "meta.title": "Nexora — Stories Beyond Reality",
   "meta.description": "Watch exclusive original movies and series with a subscription",
   "nav.home": "Home",
   "nav.movies": "Movies",
@@ -217,8 +218,9 @@ export const en = {
 export type Dict = typeof en;
 
 export const ar: Dict = {
-  brand: "منصتي",
-  "meta.title": "منصتي — أفلام ومسلسلات أصلية",
+  brand: "Nexora",
+  tagline: "قصص تتجاوز الواقع",
+  "meta.title": "Nexora — قصص تتجاوز الواقع",
   "meta.description": "شاهد أفلامي ومسلسلاتي الحصرية باشتراك مدفوع",
   "nav.home": "الرئيسية",
   "nav.movies": "أفلام",
