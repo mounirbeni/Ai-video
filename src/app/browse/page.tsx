@@ -18,6 +18,10 @@ export default async function Browse({ searchParams }: { searchParams: { type?: 
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-10">
+      <form action="/browse" className="mb-6 md:hidden">
+        {type && <input type="hidden" name="type" value={type} />}
+        <input name="q" defaultValue={q} placeholder="ابحث عن فيلم أو مسلسل…" className="input" type="search" />
+      </form>
       <h1 className="mb-8 text-3xl font-bold">{heading}</h1>
       {items.length ? (
         <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">

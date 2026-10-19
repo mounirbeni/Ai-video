@@ -26,7 +26,7 @@ export default async function TitlePage({ params }: { params: { slug: string } }
         <div className="relative mx-auto flex max-w-7xl flex-col gap-8 px-4 py-14 md:flex-row">
           {t.posterUrl && (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={t.posterUrl} alt={t.name} className="w-56 shrink-0 self-start rounded-xl shadow-2xl" />
+            <img src={t.posterUrl} alt={t.name} className="w-36 shrink-0 self-start rounded-xl shadow-2xl sm:w-56" />
           )}
           <div className="max-w-2xl">
             <p className="text-sm text-brand">{t.type === "SERIES" ? "مسلسل" : "فيلم"}</p>

@@ -19,7 +19,7 @@ export default async function Home() {
   return (
     <>
       {h ? (
-        <section className="relative h-[70vh] min-h-[420px] overflow-hidden">
+        <section className="relative h-[55vh] min-h-[380px] overflow-hidden sm:h-[70vh] sm:min-h-[420px]">
           {(h.backdropUrl || h.posterUrl) && (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={h.backdropUrl || h.posterUrl!} alt="" className="absolute inset-0 h-full w-full object-cover" />

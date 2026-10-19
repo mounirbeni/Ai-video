@@ -5,8 +5,8 @@ import { logout } from "@/app/actions/auth";
 export default async function Header() {
   const user = await getUser();
   return (
-    <header className="sticky top-0 z-40 border-b border-white/5 bg-neutral-950/80 backdrop-blur">
-      <div className="mx-auto flex max-w-7xl items-center gap-6 px-4 py-3">
+    <header className="sticky top-0 z-40 border-b border-white/5 bg-neutral-950/80 backdrop-blur" style={{ paddingTop: "env(safe-area-inset-top)" }}>
+      <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 py-3 sm:gap-6">
         <Link href="/" className="text-2xl font-extrabold text-brand">منصتي</Link>
         <nav className="hidden gap-5 text-sm text-neutral-300 sm:flex">
           <Link href="/" className="hover:text-white">الرئيسية</Link>
@@ -22,14 +22,14 @@ export default async function Header() {
             <>
               {user.role === "ADMIN" && <Link href="/admin" className="btn-ghost py-1.5">لوحة التحكم</Link>}
               {!isSubscribed(user) && <Link href="/pricing" className="btn-primary py-1.5">اشترك الآن</Link>}
-              <Link href="/account" className="hover:text-white">{user.name}</Link>
-              <form action={logout}>
+              <Link href="/account" className="hidden hover:text-white sm:inline">{user.name}</Link>
+              <form action={logout} className="hidden sm:block">
                 <button className="text-neutral-400 hover:text-white">خروج</button>
               </form>
             </>
           ) : (
             <>
-              <Link href="/login" className="hover:text-white">دخول</Link>
+              <Link href="/login" className="hidden hover:text-white sm:inline">دخول</Link>
               <Link href="/register" className="btn-primary py-1.5">إنشاء حساب</Link>
             </>
           )}

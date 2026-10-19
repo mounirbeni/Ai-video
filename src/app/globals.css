@@ -2,7 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
-body { @apply bg-neutral-950 text-neutral-100 antialiased; }
+html { -webkit-tap-highlight-color: transparent; }
+body { @apply bg-neutral-950 text-neutral-100 antialiased; overscroll-behavior-y: none; }
+/* 16px على الهاتف يمنع iOS من تكبير الصفحة عند الكتابة */
+input, textarea, select { font-size: 16px; }
+@media (min-width: 640px) { input, textarea, select { font-size: inherit; } }
 .btn { @apply inline-flex items-center justify-center gap-2 rounded-md px-5 py-2.5 font-semibold transition disabled:opacity-50; }
 .btn-primary { @apply btn bg-brand text-white hover:bg-brand-dark; }
 .btn-ghost { @apply btn bg-white/10 text-white hover:bg-white/20; }
