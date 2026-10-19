@@ -9,14 +9,30 @@ export default function UploadField({
   const [pct, setPct] = useState<number | null>(null);
   const [err, setErr] = useState("");
 
-  function upload(file: File) {
+  function send(method: string, url: string, file: File, contentType: string | null, done: (xhr: XMLHttpRequest) => void) {
+    const xhr = new XMLHttpRequest();
+    xhr.open(method, url);
+    if (contentType) xhr.setRequestHeader("Content-Type", contentType);
+    xhr.upload.onprogress = (e) => e.lengthComputable && setPct(Math.round((e.loaded / e.total) * 100));
+    xhr.onload = () => { setPct(null); done(xhr); };
+    xhr.onerror = () => { setPct(null); setErr("فشل الرفع"); };
+    xhr.send(file);
+  }
+
+  async function upload(file: File) {
     setErr("");
     setPct(0);
-    const xhr = new XMLHttpRequest();
-    xhr.open("PUT", `/api/admin/upload?kind=${kind}&name=${encodeURIComponent(file.name)}`);
-    xhr.upload.onprogress = (e) => e.lengthComputable && setPct(Math.round((e.loaded / e.total) * 100));
-    xhr.onload = () => {
-      setPct(null);
+    const qs = `kind=${kind}&name=${encodeURIComponent(file.name)}`;
+    const init = await fetch(`/api/admin/upload?${qs}`, { method: "POST" }).then((r) => r.json()).catch(() => null);
+    if (!init || init.error) { setPct(null); setErr(init?.error || "فشل الرفع"); return; }
+
+    if (init.direct) {
+      // رفع مباشر إلى حاوية Neon عبر رابط موقّع
+      send("PUT", init.uploadUrl, file, init.contentType, (xhr) =>
+        xhr.status >= 200 && xhr.status < 300 ? setValue(init.value) : setErr(`فشل الرفع (${xhr.status})`));
+      return;
+    }
+    send("PUT", `/api/admin/upload?${qs}`, file, null, (xhr) => {
       try {
         const res = JSON.parse(xhr.responseText);
         if (xhr.status === 200) setValue(res.value);
@@ -24,9 +40,7 @@ export default function UploadField({
       } catch {
         setErr("فشل الرفع");
       }
-    };
-    xhr.onerror = () => { setPct(null); setErr("فشل الرفع"); };
-    xhr.send(file);
+    });
   }
 
   return (

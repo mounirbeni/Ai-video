@@ -6,3 +6,4 @@ node_modules
 storage/*
 !storage/.gitkeep
 next-env.d.ts
+.neon

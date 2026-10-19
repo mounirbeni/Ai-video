@@ -4,7 +4,7 @@ import { Readable } from "node:stream";
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getUser, isSubscribed } from "@/lib/auth";
-import { VIDEO_DIR, VIDEO_TYPES, resolveIn } from "@/lib/storage";
+import { VIDEO_DIR, VIDEO_TYPES, objectKey, presignGet, resolveIn, s3 } from "@/lib/storage";
 
 export async function GET(req: Request, { params }: { params: { kind: string; id: string } }) {
   let src: string | null = null;
@@ -27,6 +27,9 @@ export async function GET(req: Request, { params }: { params: { kind: string; id
 
   // رابط خارجي (CDN/تخزين سحابي)
   if (!src.startsWith("local:")) return NextResponse.redirect(src, 302);
+
+  // تخزين Neon: رابط موقّع قصير العمر (يدعم Range أصلًا)
+  if (s3) return NextResponse.redirect(await presignGet(objectKey("video", src.slice(6)), 3 * 3600), 302);
 
   const file = resolveIn(VIDEO_DIR, src.slice(6));
   if (!file || !fs.existsSync(file)) return new NextResponse("Not found", { status: 404 });
