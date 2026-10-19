@@ -2,15 +2,15 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "منصتي — أفلام ومسلسلات",
-    short_name: "منصتي",
-    description: "شاهد الأفلام والمسلسلات الحصرية",
+    name: "Minassati — Movies & Series",
+    short_name: "Minassati",
+    description: "Watch exclusive original movies and series",
     start_url: "/",
     scope: "/",
     display: "standalone",
     orientation: "portrait",
-    dir: "rtl",
-    lang: "ar",
+    dir: "auto",
+    lang: "en",
     background_color: "#0a0a0a",
     theme_color: "#0a0a0a",
     icons: [

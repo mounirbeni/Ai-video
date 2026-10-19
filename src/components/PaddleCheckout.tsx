@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useT } from "@/lib/i18n/client";
 
 type PaddleJs = {
   Environment: { set: (env: string) => void };
@@ -31,6 +32,7 @@ export default function PaddleCheckout({
   priceId, token, env, email, userId,
 }: { priceId: string; token: string; env: string; email: string; userId: string }) {
   const [busy, setBusy] = useState(false);
+  const t = useT();
   useEffect(() => { loadPaddle(token, env).catch(() => {}); }, [token, env]);
 
   async function open() {
@@ -41,12 +43,12 @@ export default function PaddleCheckout({
         items: [{ priceId, quantity: 1 }],
         customer: { email },
         customData: { userId },
-        settings: { displayMode: "overlay", locale: "ar", successUrl: `${location.origin}/account?success=1` },
+        settings: { displayMode: "overlay", locale: t.locale, successUrl: `${location.origin}/account?success=1` },
       });
     } finally {
       setBusy(false);
     }
   }
 
-  return <button type="button" onClick={open} disabled={busy} className="btn-primary w-full">اشترك الآن</button>;
+  return <button type="button" onClick={open} disabled={busy} className="btn-primary w-full">{t("pricing.subscribe")}</button>;
 }

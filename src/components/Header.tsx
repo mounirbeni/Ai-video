@@ -1,36 +1,43 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import { getUser, isSubscribed } from "@/lib/auth";
 import { logout } from "@/app/actions/auth";
+import { getT } from "@/lib/i18n/server";
+import LangSwitch from "./LangSwitch";
 
 export default async function Header() {
   const user = await getUser();
+  const t = getT();
   return (
     <header className="sticky top-0 z-40 border-b border-white/5 bg-neutral-950/80 backdrop-blur" style={{ paddingTop: "env(safe-area-inset-top)" }}>
       <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 py-3 sm:gap-6">
-        <Link href="/" className="text-2xl font-extrabold text-brand">منصتي</Link>
+        <Link href="/" className="text-2xl font-extrabold text-brand">{t("brand")}</Link>
         <nav className="hidden gap-5 text-sm text-neutral-300 sm:flex">
-          <Link href="/" className="hover:text-white">الرئيسية</Link>
-          <Link href="/browse?type=MOVIE" className="hover:text-white">أفلام</Link>
-          <Link href="/browse?type=SERIES" className="hover:text-white">مسلسلات</Link>
-          <Link href="/pricing" className="hover:text-white">الاشتراك</Link>
+          <Link href="/" className="hover:text-white">{t("nav.home")}</Link>
+          <Link href="/browse?type=MOVIE" className="hover:text-white">{t("nav.movies")}</Link>
+          <Link href="/browse?type=SERIES" className="hover:text-white">{t("nav.series")}</Link>
+          <Link href="/pricing" className="hover:text-white">{t("nav.subscribe")}</Link>
         </nav>
         <div className="ms-auto flex items-center gap-3 text-sm">
           <form action="/browse" className="hidden md:block">
-            <input name="q" placeholder="ابحث…" className="input w-48 py-1.5" />
+            <input name="q" placeholder={t("nav.searchPlaceholder")} className="input w-48 py-1.5" />
           </form>
+          <Suspense>
+            <LangSwitch className="text-neutral-300 hover:text-white" />
+          </Suspense>
           {user ? (
             <>
-              {user.role === "ADMIN" && <Link href="/admin" className="btn-ghost py-1.5">لوحة التحكم</Link>}
-              {!isSubscribed(user) && <Link href="/pricing" className="btn-primary py-1.5">اشترك الآن</Link>}
+              {user.role === "ADMIN" && <Link href="/admin" className="btn-ghost py-1.5">{t("nav.admin")}</Link>}
+              {!isSubscribed(user) && <Link href="/pricing" className="btn-primary py-1.5">{t("pricing.subscribe")}</Link>}
               <Link href="/account" className="hidden hover:text-white sm:inline">{user.name}</Link>
               <form action={logout} className="hidden sm:block">
-                <button className="text-neutral-400 hover:text-white">خروج</button>
+                <button className="text-neutral-400 hover:text-white">{t("nav.logout")}</button>
               </form>
             </>
           ) : (
             <>
-              <Link href="/login" className="hidden hover:text-white sm:inline">دخول</Link>
-              <Link href="/register" className="btn-primary py-1.5">إنشاء حساب</Link>
+              <Link href="/login" className="hidden hover:text-white sm:inline">{t("nav.login")}</Link>
+              <Link href="/register" className="btn-primary py-1.5">{t("nav.register")}</Link>
             </>
           )}
         </div>

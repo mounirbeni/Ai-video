@@ -14,10 +14,10 @@ export async function POST(req: Request) {
 
   const planId = String((await req.formData()).get("plan")) as PlanId;
   const plan = PLANS[planId];
-  if (!plan) return NextResponse.json({ error: "خطة غير صالحة" }, { status: 400 });
+  if (!plan) return NextResponse.json({ error: "Invalid plan" }, { status: 400 });
 
   if (!stripe) {
-    if (!demoPayments) return NextResponse.json({ error: "الدفع غير مهيأ" }, { status: 503 });
+    if (!demoPayments) return NextResponse.json({ error: "Payments are not configured" }, { status: 503 });
     await db.user.update({
       where: { id: user.id },
       data: {
@@ -30,7 +30,7 @@ export async function POST(req: Request) {
   }
 
   const price = process.env[plan.priceEnv];
-  if (!price) return NextResponse.json({ error: `عيّن ${plan.priceEnv}` }, { status: 500 });
+  if (!price) return NextResponse.json({ error: `Set ${plan.priceEnv}` }, { status: 500 });
 
   let customer = user.stripeCustomerId;
   if (!customer) {

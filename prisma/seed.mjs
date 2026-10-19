@@ -14,7 +14,7 @@ const passwordHash = await bcrypt.hash(password, 10);
 await prisma.user.upsert({
   where: { email },
   update: { role: "ADMIN" },
-  create: { email, name: "المدير", passwordHash, role: "ADMIN" },
+  create: { email, name: "Admin", passwordHash, role: "ADMIN" },
 });
 console.log(`تم تجهيز حساب المدير: ${email}`);
 await prisma.$disconnect();

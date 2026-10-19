@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { getUser, isSubscribed } from "@/lib/auth";
 import { genresList } from "@/lib/utils";
+import { getT } from "@/lib/i18n/server";
 
 export const dynamic = "force-dynamic";
 
@@ -13,6 +14,7 @@ export default async function TitlePage({ params }: { params: { slug: string } }
   });
   if (!t || !t.published) notFound();
   const subscribed = isSubscribed(await getUser());
+  const tr = getT();
   const seasons = Array.from(new Set(t.episodes.map((e) => e.season)));
 
   return (
@@ -29,12 +31,12 @@ export default async function TitlePage({ params }: { params: { slug: string } }
             <img src={t.posterUrl} alt={t.name} className="w-36 shrink-0 self-start rounded-xl shadow-2xl sm:w-56" />
           )}
           <div className="max-w-2xl">
-            <p className="text-sm text-brand">{t.type === "SERIES" ? "مسلسل" : "فيلم"}</p>
+            <p className="text-sm text-brand">{tr(`type.${t.type as "MOVIE" | "SERIES"}`)}</p>
             <h1 className="mt-1 text-4xl font-extrabold">{t.name}</h1>
             <div className="mt-3 flex flex-wrap gap-2 text-sm text-neutral-400">
               {t.year && <span>{t.year}</span>}
-              {t.duration && <span>• {t.duration} دقيقة</span>}
-              {t.type === "SERIES" && t.episodes.length > 0 && <span>• {t.episodes.length} حلقة</span>}
+              {t.duration && <span>• {tr("title.minutes", { n: t.duration })}</span>}
+              {t.type === "SERIES" && t.episodes.length > 0 && <span>• {tr("title.episodes", { n: t.episodes.length })}</span>}
               {genresList(t.genres).map((g) => (
                 <span key={g} className="rounded bg-white/10 px-2">{g}</span>
               ))}
@@ -42,15 +44,15 @@ export default async function TitlePage({ params }: { params: { slug: string } }
             <p className="mt-5 whitespace-pre-line leading-8 text-neutral-200">{t.description}</p>
             <div className="mt-6 flex flex-wrap gap-3">
               {t.comingSoon && (
-                <span className="btn bg-amber-500/20 text-amber-300">قريبًا{t.releaseLabel && ` · ${t.releaseLabel}`}</span>
+                <span className="btn bg-amber-500/20 text-amber-300">{tr("badge.soon")}{t.releaseLabel && ` · ${t.releaseLabel}`}</span>
               )}
               {!t.comingSoon && (t.type === "MOVIE" || t.episodes.length > 0) && (
                 <Link href={`/watch/${t.slug}`} className="btn-primary">
-                  {subscribed || t.isFree ? "▶ شاهد الآن" : "🔒 اشترك للمشاهدة"}
+                  {subscribed || t.isFree ? tr("title.watch") : tr("title.subscribeToWatch")}
                 </Link>
               )}
               {t.trailerUrl && (
-                <a href={t.trailerUrl} target="_blank" rel="noreferrer" className="btn-ghost">الإعلان التشويقي</a>
+                <a href={t.trailerUrl} target="_blank" rel="noreferrer" className="btn-ghost">{tr("title.trailer")}</a>
               )}
             </div>
           </div>
@@ -59,10 +61,10 @@ export default async function TitlePage({ params }: { params: { slug: string } }
 
       {t.type === "SERIES" && !t.comingSoon && (
         <section className="mx-auto max-w-7xl px-4 py-8">
-          <h2 className="mb-4 text-2xl font-bold">الحلقات</h2>
+          <h2 className="mb-4 text-2xl font-bold">{tr("title.episodesHeading")}</h2>
           {seasons.map((s) => (
             <div key={s} className="mb-8">
-              {seasons.length > 1 && <h3 className="mb-3 text-lg text-neutral-400">الموسم {s}</h3>}
+              {seasons.length > 1 && <h3 className="mb-3 text-lg text-neutral-400">{tr("title.season", { n: s })}</h3>}
               <div className="divide-y divide-white/5 rounded-xl border border-white/10">
                 {t.episodes.filter((e) => e.season === s).map((e) => {
                   const open = subscribed || t.isFree || e.isFree;
@@ -73,7 +75,7 @@ export default async function TitlePage({ params }: { params: { slug: string } }
                         <p className="font-semibold">{e.name}</p>
                         {e.description && <p className="line-clamp-2 text-sm text-neutral-400">{e.description}</p>}
                       </div>
-                      {e.duration && <span className="text-sm text-neutral-500">{e.duration} د</span>}
+                      {e.duration && <span className="text-sm text-neutral-500">{tr("title.minShort", { n: e.duration })}</span>}
                       <span>{open ? "▶" : "🔒"}</span>
                     </Link>
                   );
@@ -81,7 +83,7 @@ export default async function TitlePage({ params }: { params: { slug: string } }
               </div>
             </div>
           ))}
-          {!t.episodes.length && <p className="text-neutral-400">لا توجد حلقات بعد.</p>}
+          {!t.episodes.length && <p className="text-neutral-400">{tr("title.noEpisodes")}</p>}
         </section>
       )}
     </div>

@@ -7,6 +7,7 @@ import { db } from "@/lib/db";
 import { createSession, destroySession, getUser } from "@/lib/auth";
 import { issueToken, consumeToken } from "@/lib/tokens";
 import { sendMail } from "@/lib/mail";
+import { getT } from "@/lib/i18n/server";
 
 export type FormState = { error?: string; ok?: string } | undefined;
 
@@ -23,21 +24,19 @@ function baseUrl() {
 
 async function sendVerification(user: { id: string; email: string; name: string }) {
   const token = await issueToken(user.id, "VERIFY", 48);
-  await sendMail(
-    user.email,
-    "تأكيد بريدك الإلكتروني — منصتي",
-    `مرحبًا ${user.name}،\nاضغط الرابط لتأكيد بريدك:\n${baseUrl()}/verify-email?token=${token}\nالرابط صالح لمدة 48 ساعة.`,
-  );
+  const t = getT();
+  await sendMail(user.email, t("mail.verifySubject"), t("mail.verifyBody", { name: user.name, link: `${baseUrl()}/verify-email?token=${token}` }), t.dir);
 }
 
 export async function register(_: FormState, form: FormData): Promise<FormState> {
   const name = String(form.get("name") || "").trim();
   const email = String(form.get("email") || "").trim().toLowerCase();
   const password = String(form.get("password") || "");
-  if (!name || !email.includes("@")) return { error: "أدخل الاسم وبريدًا صحيحًا" };
-  if (password.length < 8) return { error: "كلمة المرور 8 أحرف على الأقل" };
-  if (form.get("terms") !== "on") return { error: "يجب الموافقة على الشروط وسياسة الخصوصية" };
-  if (await db.user.findUnique({ where: { email } })) return { error: "البريد مسجل مسبقًا" };
+  const t = getT();
+  if (!name || !email.includes("@")) return { error: t("err.nameEmail") };
+  if (password.length < 8) return { error: t("err.passwordLength") };
+  if (form.get("terms") !== "on") return { error: t("err.terms") };
+  if (await db.user.findUnique({ where: { email } })) return { error: t("err.emailTaken") };
 
   const user = await db.user.create({
     data: { name, email, passwordHash: await bcrypt.hash(password, 10) },
@@ -52,7 +51,7 @@ export async function login(_: FormState, form: FormData): Promise<FormState> {
   const password = String(form.get("password") || "");
   const user = await db.user.findUnique({ where: { email } });
   if (!user || !(await bcrypt.compare(password, user.passwordHash)))
-    return { error: "البريد أو كلمة المرور غير صحيحة" };
+    return { error: getT()("err.badLogin") };
   await createSession(user.id);
   redirect(safeNext(form.get("next")));
 }
@@ -71,23 +70,21 @@ export async function resendVerification(): Promise<void> {
 export async function forgotPassword(_: FormState, form: FormData): Promise<FormState> {
   const email = String(form.get("email") || "").trim().toLowerCase();
   const user = await db.user.findUnique({ where: { email } });
+  const t = getT();
   if (user) {
     const token = await issueToken(user.id, "RESET", 1);
-    await sendMail(
-      user.email,
-      "إعادة تعيين كلمة المرور — منصتي",
-      `مرحبًا ${user.name}،\nلإعادة تعيين كلمة المرور اضغط الرابط:\n${baseUrl()}/reset-password?token=${token}\nالرابط صالح لمدة ساعة. إن لم تطلب ذلك فتجاهل الرسالة.`,
-    );
+    await sendMail(user.email, t("mail.resetSubject"), t("mail.resetBody", { name: user.name, link: `${baseUrl()}/reset-password?token=${token}` }), t.dir);
   }
   // نفس الرد دائمًا حتى لا نكشف وجود البريد
-  return { ok: "إن كان البريد مسجلًا فستصلك رسالة بها رابط إعادة التعيين." };
+  return { ok: t("ok.resetSent") };
 }
 
 export async function resetPassword(_: FormState, form: FormData): Promise<FormState> {
   const password = String(form.get("password") || "");
-  if (password.length < 8) return { error: "كلمة المرور 8 أحرف على الأقل" };
+  const t = getT();
+  if (password.length < 8) return { error: t("err.passwordLength") };
   const userId = await consumeToken(String(form.get("token") || ""), "RESET");
-  if (!userId) return { error: "الرابط غير صالح أو منتهي الصلاحية" };
+  if (!userId) return { error: t("err.badLink") };
   await db.user.update({
     where: { id: userId },
     // تغيير كلمة المرور عبر البريد يثبت ملكيته أيضًا

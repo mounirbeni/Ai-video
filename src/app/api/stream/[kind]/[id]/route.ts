@@ -27,9 +27,9 @@ export async function GET(req: Request, { params }: { params: { kind: string; id
   if (!src) return new NextResponse("Not found", { status: 404 });
 
   const user = await getUser();
-  if (!free && !isSubscribed(user)) return new NextResponse("اشتراك مطلوب", { status: 403 });
+  if (!free && !isSubscribed(user)) return new NextResponse("Subscription required", { status: 403 });
   if (user && !(await claimStream(user, deviceId())))
-    return new NextResponse("الحساب يُشاهَد على أجهزة أكثر من المسموح", { status: 429 });
+    return new NextResponse("Too many devices are watching on this account", { status: 429 });
 
   // رابط خارجي (CDN/تخزين سحابي)
   if (!src.startsWith("local:")) return NextResponse.redirect(src, 302);

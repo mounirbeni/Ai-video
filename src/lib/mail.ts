@@ -21,10 +21,10 @@ function toHtml(text: string) {
     .join("<br>");
 }
 
-export async function sendMail(to: string, subject: string, text: string) {
+export async function sendMail(to: string, subject: string, text: string, dir: "ltr" | "rtl" = "ltr") {
   if (!transport) {
     // بدون SMTP: تُطبع الرسالة في سجل الخادم (للتطوير)
-    console.log(`\n[mail] إلى: ${to}\n[mail] ${subject}\n${text}\n`);
+    console.log(`\n[mail] to: ${to}\n[mail] ${subject}\n${text}\n`);
     return;
   }
   await transport.sendMail({
@@ -32,6 +32,6 @@ export async function sendMail(to: string, subject: string, text: string) {
     to,
     subject,
     text,
-    html: `<div dir="rtl" style="font-family:sans-serif;line-height:1.8">${toHtml(text)}</div>`,
+    html: `<div dir="${dir}" style="font-family:sans-serif;line-height:1.8">${toHtml(text)}</div>`,
   });
 }

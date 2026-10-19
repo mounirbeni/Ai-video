@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useT } from "@/lib/i18n/client";
 
 type BIP = Event & { prompt: () => Promise<void> };
 
@@ -8,6 +9,7 @@ type BIP = Event & { prompt: () => Promise<void> };
 export default function InstallPrompt() {
   const [evt, setEvt] = useState<BIP | null>(null);
   const [ios, setIos] = useState(false);
+  const t = useT();
 
   useEffect(() => {
     navigator.serviceWorker?.register("/sw.js").catch(() => {});
@@ -33,12 +35,12 @@ export default function InstallPrompt() {
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src="/icon-192.png" alt="" className="h-10 w-10 rounded-lg" />
       <p className="flex-1 text-sm">
-        {evt ? "ثبّت منصتي على هاتفك كتطبيق" : <>للتثبيت: اضغط <b>مشاركة</b> ثم <b>«إضافة إلى الشاشة الرئيسية»</b></>}
+        {evt ? t("install.prompt") : (() => { const [a, rest] = t("install.ios").split("{share}"); const [b, c] = rest.split("{add}"); return <>{a}<b>{t("install.share")}</b>{b}<b>{t("install.add")}</b>{c}</>; })()}
       </p>
       {evt && (
-        <button className="btn-primary px-3 py-1.5 text-sm" onClick={() => evt.prompt().finally(close)}>تثبيت</button>
+        <button className="btn-primary px-3 py-1.5 text-sm" onClick={() => evt.prompt().finally(close)}>{t("install.button")}</button>
       )}
-      <button aria-label="إغلاق" className="px-1 text-neutral-400" onClick={close}>✕</button>
+      <button aria-label={t("install.close")} className="px-1 text-neutral-400" onClick={close}>✕</button>
     </div>
   );
 }

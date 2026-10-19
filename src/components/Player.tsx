@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useT } from "@/lib/i18n/client";
 
 type Props = {
   src: string;
@@ -19,6 +20,7 @@ export default function Player({ src, poster, progressKey, startAt, nextHref, wa
   const [mark, setMark] = useState({ top: 10, left: 10 });
   const [blocked, setBlocked] = useState(false);
   const retry = useRef({ at: 0, count: 0 });
+  const t = useT();
 
   // حفظ موضع المشاهدة
   useEffect(() => {
@@ -164,7 +166,7 @@ export default function Player({ src, poster, progressKey, startAt, nextHref, wa
       <button
         type="button"
         onClick={toggleFullscreen}
-        aria-label="ملء الشاشة"
+        aria-label={t("player.fullscreen")}
         className="absolute end-3 top-3 rounded-md bg-black/50 px-2.5 py-1 text-sm text-white/80 hover:bg-black/70"
       >
         ⛶
@@ -180,9 +182,9 @@ export default function Player({ src, poster, progressKey, startAt, nextHref, wa
       )}
       {blocked && (
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-black/85 p-6 text-center">
-          <p className="text-lg font-bold">الحساب يُشاهَد الآن على أجهزة أخرى</p>
-          <p className="text-sm text-neutral-400">أوقف المشاهدة على جهاز آخر ثم أعد المحاولة.</p>
-          <button className="btn-primary" onClick={() => location.reload()}>إعادة المحاولة</button>
+          <p className="text-lg font-bold">{t("player.blockedTitle")}</p>
+          <p className="text-sm text-neutral-400">{t("player.blockedText")}</p>
+          <button className="btn-primary" onClick={() => location.reload()}>{t("player.retry")}</button>
         </div>
       )}
     </div>

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { upload as blobUpload } from "@vercel/blob/client";
+import { useT } from "@/lib/i18n/client";
 
 export default function UploadField({
   name, label, kind, defaultValue, required, hint,
@@ -9,6 +10,8 @@ export default function UploadField({
   const [value, setValue] = useState(defaultValue ?? "");
   const [pct, setPct] = useState<number | null>(null);
   const [err, setErr] = useState("");
+  const t = useT();
+  const FAILED = t("upload.failed");
 
   function send(method: string, url: string, file: File, contentType: string | null, done: (xhr: XMLHttpRequest) => void) {
     const xhr = new XMLHttpRequest();
@@ -16,7 +19,7 @@ export default function UploadField({
     if (contentType) xhr.setRequestHeader("Content-Type", contentType);
     xhr.upload.onprogress = (e) => e.lengthComputable && setPct(Math.round((e.loaded / e.total) * 100));
     xhr.onload = () => { setPct(null); done(xhr); };
-    xhr.onerror = () => { setPct(null); setErr("فشل الرفع"); };
+    xhr.onerror = () => { setPct(null); setErr(FAILED); };
     xhr.send(file);
   }
 
@@ -25,7 +28,7 @@ export default function UploadField({
     setPct(0);
     const qs = `kind=${kind}&name=${encodeURIComponent(file.name)}`;
     const init = await fetch(`/api/admin/upload?${qs}`, { method: "POST" }).then((r) => r.json()).catch(() => null);
-    if (!init || init.error) { setPct(null); setErr(init?.error || "فشل الرفع"); return; }
+    if (!init || init.error) { setPct(null); setErr(init?.error || FAILED); return; }
 
     if (init.direct === "blob") {
       try {
@@ -38,7 +41,7 @@ export default function UploadField({
         });
         setValue(init.value);
       } catch (e) {
-        setErr(e instanceof Error ? e.message : "فشل الرفع");
+        setErr(e instanceof Error ? e.message : FAILED);
       }
       setPct(null);
       return;
@@ -47,16 +50,16 @@ export default function UploadField({
     if (init.direct) {
       // رفع مباشر إلى حاوية Neon عبر رابط موقّع
       send("PUT", init.uploadUrl, file, init.contentType, (xhr) =>
-        xhr.status >= 200 && xhr.status < 300 ? setValue(init.value) : setErr(`فشل الرفع (${xhr.status})`));
+        xhr.status >= 200 && xhr.status < 300 ? setValue(init.value) : setErr(`${FAILED} (${xhr.status})`));
       return;
     }
     send("PUT", `/api/admin/upload?${qs}`, file, null, (xhr) => {
       try {
         const res = JSON.parse(xhr.responseText);
         if (xhr.status === 200) setValue(res.value);
-        else setErr(res.error || "فشل الرفع");
+        else setErr(res.error || FAILED);
       } catch {
-        setErr("فشل الرفع");
+        setErr(FAILED);
       }
     });
   }
@@ -65,9 +68,9 @@ export default function UploadField({
     <div>
       <label className="label">{label}</label>
       <div className="flex gap-2">
-        <input name={name} value={value} onChange={(e) => setValue(e.target.value)} required={required} className="input" dir="ltr" placeholder="https://… أو ارفع ملفًا" />
+        <input name={name} value={value} onChange={(e) => setValue(e.target.value)} required={required} className="input" dir="ltr" placeholder={t("upload.placeholder")} />
         <label className="btn-ghost cursor-pointer whitespace-nowrap">
-          رفع
+          {t("upload.button")}
           <input type="file" hidden accept={kind === "video" ? "video/*" : "image/*"} onChange={(e) => e.target.files?.[0] && upload(e.target.files[0])} />
         </label>
       </div>

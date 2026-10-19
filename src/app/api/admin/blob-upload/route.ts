@@ -14,7 +14,7 @@ export async function POST(req: Request) {
         const user = await getUser();
         if (user?.role !== "ADMIN") throw new Error("forbidden");
         const isVideo = pathname.startsWith("videos/");
-        if (!isVideo && !pathname.startsWith("images/")) throw new Error("مسار غير صالح");
+        if (!isVideo && !pathname.startsWith("images/")) throw new Error("Invalid path");
         return {
           allowedContentTypes: Object.values(isVideo ? VIDEO_TYPES : IMAGE_TYPES),
           maximumSizeInBytes: (isVideo ? 5000 : 20) * 1024 * 1024,

@@ -1,5 +1,6 @@
 import { db } from "@/lib/db";
 import TitleCard from "@/components/TitleCard";
+import { getT } from "@/lib/i18n/server";
 
 export const dynamic = "force-dynamic";
 
@@ -14,13 +15,14 @@ export default async function Browse({ searchParams }: { searchParams: { type?: 
     },
     orderBy: { createdAt: "desc" },
   });
-  const heading = q ? `نتائج البحث: ${q}` : type === "MOVIE" ? "الأفلام" : type === "SERIES" ? "المسلسلات" : "كل المحتوى";
+  const t = getT();
+  const heading = q ? t("browse.results", { q }) : type === "MOVIE" ? t("row.movies") : type === "SERIES" ? t("row.series") : t("browse.all");
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-10">
       <form action="/browse" className="mb-6 md:hidden">
         {type && <input type="hidden" name="type" value={type} />}
-        <input name="q" defaultValue={q} placeholder="ابحث عن فيلم أو مسلسل…" className="input" type="search" />
+        <input name="q" defaultValue={q} placeholder={t("browse.placeholder")} className="input" type="search" />
       </form>
       <h1 className="mb-8 text-3xl font-bold">{heading}</h1>
       {items.length ? (
@@ -28,7 +30,7 @@ export default async function Browse({ searchParams }: { searchParams: { type?: 
           {items.map((t) => <TitleCard key={t.id} t={t} />)}
         </div>
       ) : (
-        <p className="text-neutral-400">لا توجد نتائج.</p>
+        <p className="text-neutral-400">{t("browse.none")}</p>
       )}
     </div>
   );
