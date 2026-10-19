@@ -13,7 +13,13 @@ export const s3 = process.env.AWS_ENDPOINT_URL_S3
   ? new S3Client({ forcePathStyle: true }) // Neon يتطلب path-style
   : null;
 
-if (!s3) for (const d of [VIDEO_DIR, IMAGE_DIR]) fs.mkdirSync(d, { recursive: true });
+if (!s3) {
+  try {
+    for (const d of [VIDEO_DIR, IMAGE_DIR]) fs.mkdirSync(d, { recursive: true });
+  } catch {
+    // نظام ملفات للقراءة فقط (مثل Vercel): الرفع المحلي غير متاح، يلزم تخزين Neon
+  }
+}
 
 // اسم ملف آمن: يمنع الخروج من المجلد
 export function safeName(name: string) {
