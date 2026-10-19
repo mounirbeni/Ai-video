@@ -4,6 +4,7 @@ import { Readable } from "node:stream";
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getUser, isSubscribed } from "@/lib/auth";
+import { claimStream, deviceId } from "@/lib/streams";
 import { VIDEO_DIR, VIDEO_TYPES, objectKey, presignGet, remote, resolveIn } from "@/lib/storage";
 
 export async function GET(req: Request, { params }: { params: { kind: string; id: string } }) {
@@ -23,13 +24,21 @@ export async function GET(req: Request, { params }: { params: { kind: string; id
   }
   if (!src) return new NextResponse("Not found", { status: 404 });
 
-  if (!free && !isSubscribed(await getUser())) return new NextResponse("اشتراك مطلوب", { status: 403 });
+  const user = await getUser();
+  if (!free && !isSubscribed(user)) return new NextResponse("اشتراك مطلوب", { status: 403 });
+  if (user && !(await claimStream(user, deviceId())))
+    return new NextResponse("الحساب يُشاهَد على أجهزة أكثر من المسموح", { status: 429 });
 
   // رابط خارجي (CDN/تخزين سحابي)
   if (!src.startsWith("local:")) return NextResponse.redirect(src, 302);
 
   // تخزين Neon: رابط موقّع قصير العمر (يدعم Range أصلًا)
-  if (remote) return NextResponse.redirect(await presignGet(objectKey("video", src.slice(6)), 3 * 3600), 302);
+  // رابط قصير العمر؛ المشغّل يجدده تلقائيًا عند انتهائه
+  if (remote) {
+    const res = NextResponse.redirect(await presignGet(objectKey("video", src.slice(6)), Number(process.env.STREAM_URL_TTL || 600)), 302);
+    res.headers.set("Cache-Control", "private, no-store");
+    return res;
+  }
 
   const file = resolveIn(VIDEO_DIR, src.slice(6));
   if (!file || !fs.existsSync(file)) return new NextResponse("Not found", { status: 404 });

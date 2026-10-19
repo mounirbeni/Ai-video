@@ -24,6 +24,18 @@ model User {
   createdAt          DateTime  @default(now())
   progress           WatchProgress[]
   tokens             AuthToken[]
+  streams            ActiveStream[]
+}
+
+// الأجهزة التي تشاهد حاليًا — لمنع مشاركة الحساب
+model ActiveStream {
+  id       String   @id @default(cuid())
+  userId   String
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deviceId String
+  lastSeen DateTime @default(now())
+
+  @@unique([userId, deviceId])
 }
 
 model AuthToken {
