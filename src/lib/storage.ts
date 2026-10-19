@@ -2,6 +2,7 @@ import path from "node:path";
 import fs from "node:fs";
 import { S3Client, GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { issueSignedToken, presignUrl } from "@vercel/blob";
 
 export const STORAGE_DIR = path.join(process.cwd(), "storage");
 export const VIDEO_DIR = path.join(STORAGE_DIR, "videos");
@@ -13,7 +14,11 @@ export const s3 = process.env.AWS_ENDPOINT_URL_S3
   ? new S3Client({ forcePathStyle: true }) // Neon يتطلب path-style
   : null;
 
-if (!s3) {
+// Vercel Blob (حاوية خاصة): يُحقن BLOB_READ_WRITE_TOKEN عند ربط الحاوية بمشروع Vercel
+export const blob = !s3 && !!process.env.BLOB_READ_WRITE_TOKEN;
+export const remote = !!s3 || blob;
+
+if (!remote) {
   try {
     for (const d of [VIDEO_DIR, IMAGE_DIR]) fs.mkdirSync(d, { recursive: true });
   } catch {
@@ -34,8 +39,11 @@ export function resolveIn(dir: string, name: string) {
 
 export const objectKey = (kind: "video" | "image", name: string) => `${kind}s/${path.basename(name)}`;
 
-export function presignGet(key: string, expiresIn = 3600) {
-  return getSignedUrl(s3!, new GetObjectCommand({ Bucket: BUCKET, Key: key }), { expiresIn });
+export async function presignGet(key: string, expiresIn = 3600) {
+  if (s3) return getSignedUrl(s3, new GetObjectCommand({ Bucket: BUCKET, Key: key }), { expiresIn });
+  const validUntil = Date.now() + expiresIn * 1000;
+  const token = await issueSignedToken({ pathname: key, operations: ["get"], validUntil });
+  return (await presignUrl(token, { operation: "get", pathname: key, validUntil, access: "private" })).presignedUrl;
 }
 
 export function presignPut(key: string, contentType: string, expiresIn = 3600) {

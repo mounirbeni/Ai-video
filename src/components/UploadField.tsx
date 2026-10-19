@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { upload as blobUpload } from "@vercel/blob/client";
 
 export default function UploadField({
   name, label, kind, defaultValue, required, hint,
@@ -25,6 +26,23 @@ export default function UploadField({
     const qs = `kind=${kind}&name=${encodeURIComponent(file.name)}`;
     const init = await fetch(`/api/admin/upload?${qs}`, { method: "POST" }).then((r) => r.json()).catch(() => null);
     if (!init || init.error) { setPct(null); setErr(init?.error || "فشل الرفع"); return; }
+
+    if (init.direct === "blob") {
+      try {
+        await blobUpload(init.pathname, file, {
+          access: "private",
+          handleUploadUrl: "/api/admin/blob-upload",
+          contentType: init.contentType,
+          multipart: file.size > 50 * 1024 * 1024,
+          onUploadProgress: (e) => setPct(Math.round(e.percentage)),
+        });
+        setValue(init.value);
+      } catch (e) {
+        setErr(e instanceof Error ? e.message : "فشل الرفع");
+      }
+      setPct(null);
+      return;
+    }
 
     if (init.direct) {
       // رفع مباشر إلى حاوية Neon عبر رابط موقّع
