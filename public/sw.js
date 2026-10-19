@@ -1,6 +1,6 @@
 // عامل خدمة بسيط: يجعل المنصة قابلة للتثبيت ويعرض صفحة بديلة عند انقطاع الإنترنت.
 // لا يخزّن الفيديو ولا واجهات API ولا الصفحات (المحتوى خاص بكل مشترك).
-const CACHE = "shell-v3";
+const CACHE = "shell-v4";
 const OFFLINE = "/offline.html";
 
 self.addEventListener("install", (e) => {
