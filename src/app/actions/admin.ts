@@ -24,6 +24,8 @@ function titleData(f: FormData) {
     duration: int(f, "duration"),
     isFree: bool(f, "isFree"),
     featured: bool(f, "featured"),
+    comingSoon: bool(f, "comingSoon"),
+    releaseLabel: opt(f, "releaseLabel"),
     published: bool(f, "published"),
   };
 }

@@ -14,7 +14,12 @@ export default function TitleCard({ t }: { t: Title }) {
         <span className="absolute start-2 top-2 rounded bg-black/70 px-2 py-0.5 text-xs">
           {t.type === "SERIES" ? "مسلسل" : "فيلم"}
         </span>
-        {t.isFree && <span className="absolute end-2 top-2 rounded bg-green-600 px-2 py-0.5 text-xs">مجاني</span>}
+        {t.comingSoon && (
+          <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 to-transparent p-2 pt-6 text-center text-xs font-bold text-amber-300">
+            قريبًا{t.releaseLabel && ` · ${t.releaseLabel}`}
+          </span>
+        )}
+        {t.isFree && !t.comingSoon && <span className="absolute end-2 top-2 rounded bg-green-600 px-2 py-0.5 text-xs">مجاني</span>}
       </div>
       <p className="mt-2 truncate text-sm font-semibold group-hover:text-brand">{t.name}</p>
     </Link>

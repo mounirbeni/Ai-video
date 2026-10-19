@@ -41,7 +41,10 @@ export default async function TitlePage({ params }: { params: { slug: string } }
             </div>
             <p className="mt-5 whitespace-pre-line leading-8 text-neutral-200">{t.description}</p>
             <div className="mt-6 flex flex-wrap gap-3">
-              {(t.type === "MOVIE" || t.episodes.length > 0) && (
+              {t.comingSoon && (
+                <span className="btn bg-amber-500/20 text-amber-300">قريبًا{t.releaseLabel && ` · ${t.releaseLabel}`}</span>
+              )}
+              {!t.comingSoon && (t.type === "MOVIE" || t.episodes.length > 0) && (
                 <Link href={`/watch/${t.slug}`} className="btn-primary">
                   {subscribed || t.isFree ? "▶ شاهد الآن" : "🔒 اشترك للمشاهدة"}
                 </Link>
@@ -54,7 +57,7 @@ export default async function TitlePage({ params }: { params: { slug: string } }
         </div>
       </section>
 
-      {t.type === "SERIES" && (
+      {t.type === "SERIES" && !t.comingSoon && (
         <section className="mx-auto max-w-7xl px-4 py-8">
           <h2 className="mb-4 text-2xl font-bold">الحلقات</h2>
           {seasons.map((s) => (

@@ -31,6 +31,8 @@ export default function TitleForm({ action, t }: { action: (f: FormData) => void
         <label className="flex items-center gap-2"><input type="checkbox" name="published" defaultChecked={t?.published ?? true} /> منشور</label>
         <label className="flex items-center gap-2"><input type="checkbox" name="featured" defaultChecked={t?.featured} /> مميز في الواجهة</label>
         <label className="flex items-center gap-2"><input type="checkbox" name="isFree" defaultChecked={t?.isFree} /> مجاني للجميع</label>
+        <label className="flex items-center gap-2"><input type="checkbox" name="comingSoon" defaultChecked={t?.comingSoon} /> قريبًا (يُعرض دون مشاهدة)</label>
+        <input name="releaseLabel" defaultValue={t?.releaseLabel ?? ""} className="input w-56 py-1.5" placeholder="موعد العرض، مثل: ديسمبر 2026" />
       </div>
       <div className="md:col-span-2"><button className="btn-primary">{isNew ? "إنشاء" : "حفظ التعديلات"}</button></div>
     </form>

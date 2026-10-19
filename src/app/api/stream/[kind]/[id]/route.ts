@@ -14,11 +14,13 @@ export async function GET(req: Request, { params }: { params: { kind: string; id
   if (params.kind === "title") {
     const t = await db.title.findUnique({ where: { id: params.id } });
     if (!t?.published) return new NextResponse("Not found", { status: 404 });
+    if (t.comingSoon) return new NextResponse("Not found", { status: 404 });
     src = t.videoSrc;
     free = t.isFree;
   } else if (params.kind === "episode") {
     const e = await db.episode.findUnique({ where: { id: params.id }, include: { title: true } });
     if (!e?.title.published) return new NextResponse("Not found", { status: 404 });
+    if (e.title.comingSoon) return new NextResponse("Not found", { status: 404 });
     src = e.videoSrc;
     free = e.isFree || e.title.isFree;
   }

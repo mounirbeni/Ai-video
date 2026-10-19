@@ -64,6 +64,8 @@ model Title {
   duration    Int? // بالدقائق
   isFree      Boolean   @default(false)
   featured    Boolean   @default(false)
+  comingSoon  Boolean   @default(false) // يُعرض في «قريبًا» ولا يمكن مشاهدته بعد
+  releaseLabel String? // مثل «ديسمبر 2026»
   published   Boolean   @default(true)
   createdAt   DateTime  @default(now())
   episodes    Episode[]

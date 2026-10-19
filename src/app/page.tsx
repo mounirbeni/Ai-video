@@ -5,13 +5,14 @@ import Row from "@/components/Row";
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const published = { published: true };
-  const [hero, latest, movies, series, free] = await Promise.all([
-    db.title.findFirst({ where: { ...published, featured: true }, orderBy: { createdAt: "desc" } }),
+  const published = { published: true, comingSoon: false };
+  const [hero, latest, movies, series, free, soon] = await Promise.all([
+    db.title.findFirst({ where: { published: true, featured: true }, orderBy: { createdAt: "desc" } }),
     db.title.findMany({ where: published, orderBy: { createdAt: "desc" }, take: 20 }),
     db.title.findMany({ where: { ...published, type: "MOVIE" }, orderBy: { createdAt: "desc" }, take: 20 }),
     db.title.findMany({ where: { ...published, type: "SERIES" }, orderBy: { createdAt: "desc" }, take: 20 }),
     db.title.findMany({ where: { ...published, isFree: true }, take: 20 }),
+    db.title.findMany({ where: { published: true, comingSoon: true }, orderBy: { createdAt: "desc" }, take: 20 }),
   ]);
   const h = hero ?? latest[0];
 
@@ -29,7 +30,11 @@ export default async function Home() {
             <h1 className="max-w-2xl text-4xl font-extrabold sm:text-6xl">{h.name}</h1>
             <p className="mt-4 line-clamp-3 max-w-xl text-neutral-300">{h.description}</p>
             <div className="mt-6 flex gap-3">
-              <Link href={`/watch/${h.slug}`} className="btn-primary">▶ شاهد الآن</Link>
+              {h.comingSoon ? (
+                <span className="btn bg-amber-500/20 text-amber-300">قريبًا{h.releaseLabel && ` · ${h.releaseLabel}`}</span>
+              ) : (
+                <Link href={`/watch/${h.slug}`} className="btn-primary">▶ شاهد الآن</Link>
+              )}
               <Link href={`/title/${h.slug}`} className="btn-ghost">المزيد من المعلومات</Link>
             </div>
           </div>
@@ -41,6 +46,7 @@ export default async function Home() {
           <Link href="/admin" className="btn-primary mt-6">لوحة التحكم</Link>
         </section>
       )}
+      <Row title="قريبًا" items={soon} />
       <Row title="أحدث الإضافات" items={latest} />
       <Row title="الأفلام" items={movies} />
       <Row title="المسلسلات" items={series} />

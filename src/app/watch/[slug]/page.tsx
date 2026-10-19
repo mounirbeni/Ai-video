@@ -17,6 +17,16 @@ export default async function Watch({ params, searchParams }: { params: { slug: 
   if (t.type === "SERIES" && !ep) notFound();
 
   const user = await getUser();
+  if (t.comingSoon && user?.role !== "ADMIN") {
+    return (
+      <div className="mx-auto max-w-lg px-4 py-24 text-center">
+        <p className="text-5xl">⏳</p>
+        <h1 className="mt-4 text-3xl font-bold">«{t.name}» قريبًا</h1>
+        <p className="mt-3 text-neutral-400">{t.releaseLabel ? `موعد العرض: ${t.releaseLabel}` : "سيُتاح للمشتركين قريبًا."}</p>
+        <Link href={`/title/${t.slug}`} className="btn-ghost mt-6">تفاصيل العمل</Link>
+      </div>
+    );
+  }
   const allowed = isSubscribed(user) || t.isFree || !!ep?.isFree;
 
   if (!allowed) {
