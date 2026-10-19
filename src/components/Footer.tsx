@@ -12,6 +12,7 @@ export default function Footer() {
     { href: "/support", label: t("support.nav") },
     { href: "/terms", label: t("footer.terms") },
     { href: "/privacy", label: t("footer.privacy") },
+    { href: "/refund", label: t("footer.refund") },
   ];
   return (
     <footer className="relative mt-20 bg-neutral-950">
