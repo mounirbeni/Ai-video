@@ -31,12 +31,13 @@ export default async function Home() {
           <div className="relative mx-auto flex h-full max-w-7xl flex-col justify-end px-4 pb-16">
             <h1 className="max-w-2xl text-4xl font-extrabold sm:text-6xl">{h.name}</h1>
             <p className="mt-4 line-clamp-3 max-w-xl text-neutral-300">{h.description}</p>
-            <div className="mt-6 flex gap-3">
+            <div className="mt-6 flex flex-wrap gap-3">
               {h.comingSoon ? (
                 <span className="btn bg-amber-500/20 text-amber-300">{t("badge.soon")}{h.releaseLabel && ` · ${h.releaseLabel}`}</span>
               ) : (
                 <Link href={`/watch/${h.slug}`} className="btn-primary">{t("home.watch")}</Link>
               )}
+              {h.trailerUrl && <Link href={`/title/${h.slug}#trailer`} className="btn-ghost">{t("title.watchTrailer")}</Link>}
               <Link href={`/title/${h.slug}`} className="btn-ghost">{t("home.more")}</Link>
             </div>
           </div>

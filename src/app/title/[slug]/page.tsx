@@ -16,6 +16,8 @@ export default async function TitlePage({ params }: { params: { slug: string } }
   const subscribed = isSubscribed(await getUser());
   const tr = getT();
   const seasons = Array.from(new Set(t.episodes.map((e) => e.season)));
+  // ملف فيديو (مرفوع أو داخل الموقع) يُعرض في مشغّل مجاني بالصفحة؛ غير ذلك (يوتيوب مثلًا) يبقى رابطًا خارجيًا
+  const inlineTrailer = !!t.trailerUrl && (t.trailerUrl.startsWith("/") || /\.(mp4|webm|mov)(\?|$)/i.test(t.trailerUrl));
 
   return (
     <div>
@@ -53,13 +55,35 @@ export default async function TitlePage({ params }: { params: { slug: string } }
                   {subscribed || t.isFree ? tr("title.watch") : tr("title.subscribeToWatch")}
                 </Link>
               )}
-              {t.trailerUrl && (
+              {t.trailerUrl && inlineTrailer && (
+                <a href="#trailer" className={t.comingSoon ? "btn-primary" : "btn-ghost"}>{tr("title.watchTrailer")}</a>
+              )}
+              {t.trailerUrl && !inlineTrailer && (
                 <a href={t.trailerUrl} target="_blank" rel="noreferrer" className="btn-ghost">{tr("title.trailer")}</a>
               )}
             </div>
           </div>
         </div>
       </section>
+
+      {inlineTrailer && (
+        <section id="trailer" className="mx-auto max-w-5xl scroll-mt-20 px-4 py-8">
+          <div className="mb-4 flex items-center gap-3">
+            <h2 className="text-2xl font-bold">{tr("title.trailer")}</h2>
+            <span className="rounded-full bg-gradient-to-r from-brand-violet/30 to-brand-cyan/30 px-2.5 py-0.5 text-xs text-white ring-1 ring-brand-violet/40">{tr("title.trailerFree")}</span>
+          </div>
+          <div className="overflow-hidden rounded-2xl border border-white/10 bg-black shadow-[0_0_60px_-20px_rgba(124,92,255,.6)]">
+            <video
+              src={t.trailerUrl!}
+              poster={t.backdropUrl || t.posterUrl || undefined}
+              controls
+              playsInline
+              preload="metadata"
+              className="aspect-video w-full"
+            />
+          </div>
+        </section>
+      )}
 
       {t.type === "SERIES" && !t.comingSoon && (
         <section className="mx-auto max-w-7xl px-4 py-8">
