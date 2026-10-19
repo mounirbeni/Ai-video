@@ -25,7 +25,12 @@ function baseUrl() {
 async function sendVerification(user: { id: string; email: string; name: string }) {
   const token = await issueToken(user.id, "VERIFY", 48);
   const t = getT();
-  await sendMail(user.email, t("mail.verifySubject"), t("mail.verifyBody", { name: user.name, link: `${baseUrl()}/verify-email?token=${token}` }), t.dir);
+  const link = `${baseUrl()}/verify-email?token=${token}`;
+  await sendMail(user.email, t("mail.verifySubject"), t("mail.verifyBody", { name: user.name, link }), t.dir, {
+    action: { label: t("mail.verifyButton"), url: link },
+    fallback: t("mail.fallback"),
+    footer: t("mail.footer"),
+  });
 }
 
 export async function register(_: FormState, form: FormData): Promise<FormState> {
@@ -73,7 +78,12 @@ export async function forgotPassword(_: FormState, form: FormData): Promise<Form
   const t = getT();
   if (user) {
     const token = await issueToken(user.id, "RESET", 1);
-    await sendMail(user.email, t("mail.resetSubject"), t("mail.resetBody", { name: user.name, link: `${baseUrl()}/reset-password?token=${token}` }), t.dir);
+    const link = `${baseUrl()}/reset-password?token=${token}`;
+    await sendMail(user.email, t("mail.resetSubject"), t("mail.resetBody", { name: user.name, link }), t.dir, {
+      action: { label: t("mail.resetButton"), url: link },
+      fallback: t("mail.fallback"),
+      footer: t("mail.footer"),
+    });
   }
   // نفس الرد دائمًا حتى لا نكشف وجود البريد
   return { ok: t("ok.resetSent") };
