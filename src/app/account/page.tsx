@@ -2,6 +2,7 @@ import Link from "next/link";
 import { requireUser, isSubscribed } from "@/lib/auth";
 import { PLANS, type PlanId } from "@/lib/plans";
 import { stripe } from "@/lib/stripe";
+import { paddle } from "@/lib/paddle";
 import { resendVerification } from "@/app/actions/auth";
 
 export const dynamic = "force-dynamic";
@@ -41,7 +42,7 @@ export default async function Account({ searchParams }: { searchParams: { succes
         {user.currentPeriodEnd && <p><span className="text-neutral-400">يتجدد/ينتهي في: </span>{user.currentPeriodEnd.toLocaleDateString("ar")}</p>}
         <div className="flex gap-3 pt-3">
           {!sub && <Link href="/pricing" className="btn-primary">اشترك الآن</Link>}
-          {stripe && user.stripeCustomerId && (
+          {((stripe && user.stripeCustomerId) || (paddle && user.paddleCustomerId)) && (
             <form action="/api/portal" method="post"><button className="btn-ghost">إدارة الدفع والاشتراك</button></form>
           )}
         </div>

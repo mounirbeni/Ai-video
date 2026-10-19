@@ -6,6 +6,7 @@ export const PLANS = {
     period: "شهريًا",
     days: 30,
     priceEnv: "STRIPE_PRICE_MONTHLY",
+    paddlePriceEnv: "PADDLE_PRICE_MONTHLY",
   },
   yearly: {
     id: "yearly",
@@ -14,6 +15,7 @@ export const PLANS = {
     period: "سنويًا",
     days: 365,
     priceEnv: "STRIPE_PRICE_YEARLY",
+    paddlePriceEnv: "PADDLE_PRICE_YEARLY",
   },
 } as const;
 

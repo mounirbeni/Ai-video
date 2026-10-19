@@ -6,4 +6,4 @@ export const stripe = process.env.STRIPE_SECRET_KEY
 
 // الوضع التجريبي معطّل دائمًا في الإنتاج حتى لا يُفتح الاشتراك مجانًا بالخطأ
 export const demoPayments =
-  !stripe && process.env.PAYMENTS_DEMO === "true" && process.env.NODE_ENV !== "production";
+  !stripe && !process.env.PADDLE_API_KEY && process.env.PAYMENTS_DEMO === "true" && process.env.NODE_ENV !== "production";

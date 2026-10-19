@@ -16,6 +16,7 @@ model User {
   passwordHash       String
   role               String    @default("USER") // USER | ADMIN
   stripeCustomerId   String?   @unique
+  paddleCustomerId   String?   @unique
   subscriptionId     String?
   subscriptionStatus String    @default("none") // none | active | trialing | past_due | canceled
   subscriptionPlan   String?

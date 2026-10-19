@@ -23,6 +23,13 @@ npm run dev            # http://localhost:3000
 ```
 ادخل بحساب المدير (`ADMIN_EMAIL`/`ADMIN_PASSWORD`) ثم افتح **لوحة التحكم** لإضافة أعمالك.
 
+## تفعيل الدفع (Paddle — موصى به للمغرب)
+1. في لوحة Paddle: أنشئ منتجًا بسعرين متكررين (شهري وسنوي) وانسخ معرّفيهما `pri_...`.
+2. **Developer tools → Authentication**: أنشئ API key و Client-side token.
+3. **Developer tools → Notifications**: أضف وجهة `https://نطاقك/api/paddle/webhook` بأحداث `subscription.*`، وانسخ السرّ.
+4. **Checkout settings**: أضف نطاق موقعك إلى النطاقات المعتمدة.
+5. عيّن متغيرات `PADDLE_*` في Vercel، ابدأ بـ `PADDLE_ENV="sandbox"` ثم `production` بعد الموافقة على حسابك.
+
 ## تفعيل الدفع الحقيقي (Stripe)
 1. أنشئ منتجًا بسعرين متكررين (شهري وسنوي) في لوحة Stripe.
 2. عيّن في `.env`: `STRIPE_SECRET_KEY`، `STRIPE_PRICE_MONTHLY`، `STRIPE_PRICE_YEARLY`، واجعل `PAYMENTS_DEMO="false"`.

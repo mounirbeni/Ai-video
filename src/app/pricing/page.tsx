@@ -2,6 +2,8 @@ import Link from "next/link";
 import { getUser, isSubscribed } from "@/lib/auth";
 import { PLANS } from "@/lib/plans";
 import { demoPayments } from "@/lib/stripe";
+import { paddle, paddleEnv, paddlePrice } from "@/lib/paddle";
+import PaddleCheckout from "@/components/PaddleCheckout";
 
 export const dynamic = "force-dynamic";
 
@@ -33,6 +35,8 @@ export default async function Pricing({ searchParams }: { searchParams: { cancel
             <div className="mt-auto">
               {subscribed ? (
                 <Link href="/account" className="btn-ghost w-full">أنت مشترك — إدارة الاشتراك</Link>
+              ) : user && paddle && paddlePrice(p.id) ? (
+                <PaddleCheckout priceId={paddlePrice(p.id)!} token={process.env.PADDLE_CLIENT_TOKEN!} env={paddleEnv} email={user.email} userId={user.id} />
               ) : user ? (
                 <form action="/api/checkout" method="post">
                   <input type="hidden" name="plan" value={p.id} />
