@@ -13,9 +13,6 @@ export default async function Watch({ params, searchParams }: { params: { slug: 
   });
   if (!t || !t.published) notFound();
 
-  const ep = t.type === "SERIES" ? t.episodes.find((e) => e.id === searchParams.ep) ?? t.episodes[0] : null;
-  if (t.type === "SERIES" && !ep) notFound();
-
   const user = await getUser();
   if (t.comingSoon && user?.role !== "ADMIN") {
     return (
@@ -27,6 +24,9 @@ export default async function Watch({ params, searchParams }: { params: { slug: 
       </div>
     );
   }
+  const ep = t.type === "SERIES" ? t.episodes.find((e) => e.id === searchParams.ep) ?? t.episodes[0] : null;
+  if (t.type === "SERIES" && !ep) notFound();
+
   const allowed = isSubscribed(user) || t.isFree || !!ep?.isFree;
 
   if (!allowed) {
