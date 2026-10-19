@@ -4,7 +4,8 @@ import { db } from "./db";
 const sha = (s: string) => crypto.createHash("sha256").update(s).digest("hex");
 
 export async function issueToken(userId: string, type: "VERIFY" | "RESET", hours: number) {
-  await db.authToken.deleteMany({ where: { userId, type } });
+  // نحذف المنتهية فقط: الروابط السابقة تبقى صالحة إن ضغط المستخدم «إعادة الإرسال» أكثر من مرة
+  await db.authToken.deleteMany({ where: { userId, type, expiresAt: { lt: new Date() } } });
   const token = crypto.randomBytes(32).toString("hex");
   await db.authToken.create({
     data: { userId, type, tokenHash: sha(token), expiresAt: new Date(Date.now() + hours * 3600000) },
