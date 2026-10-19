@@ -34,7 +34,7 @@ export default async function TitlePage({ params }: { params: { slug: string } }
             <div className="mt-3 flex flex-wrap gap-2 text-sm text-neutral-400">
               {t.year && <span>{t.year}</span>}
               {t.duration && <span>• {t.duration} دقيقة</span>}
-              {t.type === "SERIES" && <span>• {t.episodes.length} حلقة</span>}
+              {t.type === "SERIES" && t.episodes.length > 0 && <span>• {t.episodes.length} حلقة</span>}
               {genresList(t.genres).map((g) => (
                 <span key={g} className="rounded bg-white/10 px-2">{g}</span>
               ))}
