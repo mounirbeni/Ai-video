@@ -61,7 +61,8 @@ model Title {
   backdropUrl String?
   trailerUrl  String?
   videoSrc    String? // للأفلام: local:<file> أو رابط https
-  duration    Int? // بالدقائق
+  duration    Int? // بالدقائق — للأفلام فقط
+  plannedEpisodes Int? // للمسلسلات: عدد الحلقات المعلن قبل رفعها
   isFree      Boolean   @default(false)
   featured    Boolean   @default(false)
   comingSoon  Boolean   @default(false) // يُعرض في «قريبًا» ولا يمكن مشاهدته بعد

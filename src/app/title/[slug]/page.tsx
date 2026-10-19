@@ -35,8 +35,10 @@ export default async function TitlePage({ params }: { params: { slug: string } }
             <h1 className="mt-1 text-4xl font-extrabold">{t.name}</h1>
             <div className="mt-3 flex flex-wrap gap-2 text-sm text-neutral-400">
               {t.year && <span>{t.year}</span>}
-              {t.duration && <span>• {tr("title.minutes", { n: t.duration })}</span>}
-              {t.type === "SERIES" && t.episodes.length > 0 && <span>• {tr("title.episodes", { n: t.episodes.length })}</span>}
+              {t.type === "MOVIE" && t.duration && <span>• {tr("title.minutes", { n: t.duration })}</span>}
+              {t.type === "SERIES" && (t.episodes.length || t.plannedEpisodes) ? (
+                <span>• {(t.episodes.length || t.plannedEpisodes) === 1 ? tr("title.episode") : tr("title.episodes", { n: t.episodes.length || t.plannedEpisodes! })}</span>
+              ) : null}
               {genresList(t.genres).map((g) => (
                 <span key={g} className="rounded bg-white/10 px-2">{g}</span>
               ))}

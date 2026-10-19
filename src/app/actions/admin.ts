@@ -11,7 +11,9 @@ const opt = (f: FormData, k: string) => str(f, k) || null;
 const int = (f: FormData, k: string) => (str(f, k) ? parseInt(str(f, k)) || null : null);
 const bool = (f: FormData, k: string) => f.get(k) === "on";
 
-function titleData(f: FormData) {
+function titleData(f: FormData, type: string) {
+  // المسلسل يُقاس بعدد الحلقات، والفيلم بالمدة
+  const series = type === "SERIES";
   return {
     name: str(f, "name"),
     description: str(f, "description"),
@@ -21,7 +23,8 @@ function titleData(f: FormData) {
     backdropUrl: opt(f, "backdropUrl"),
     trailerUrl: opt(f, "trailerUrl"),
     videoSrc: opt(f, "videoSrc"),
-    duration: int(f, "duration"),
+    duration: series ? null : int(f, "duration"),
+    plannedEpisodes: series ? int(f, "plannedEpisodes") : null,
     isFree: bool(f, "isFree"),
     featured: bool(f, "featured"),
     comingSoon: bool(f, "comingSoon"),
@@ -32,8 +35,8 @@ function titleData(f: FormData) {
 
 export async function createTitle(f: FormData) {
   await requireAdmin();
-  const data = titleData(f);
   const type = str(f, "type") === "SERIES" ? "SERIES" : "MOVIE";
+  const data = titleData(f, type);
   const t = await db.title.create({ data: { ...data, type, slug: slugify(data.name) } });
   revalidatePath("/", "layout");
   redirect(`/admin/${t.id}`);
@@ -41,7 +44,8 @@ export async function createTitle(f: FormData) {
 
 export async function updateTitle(id: string, f: FormData) {
   await requireAdmin();
-  await db.title.update({ where: { id }, data: titleData(f) });
+  const current = await db.title.findUniqueOrThrow({ where: { id }, select: { type: true } });
+  await db.title.update({ where: { id }, data: titleData(f, current.type) });
   revalidatePath("/", "layout");
   redirect(`/admin/${id}?saved=1`);
 }

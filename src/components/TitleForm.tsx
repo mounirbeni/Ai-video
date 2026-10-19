@@ -19,7 +19,12 @@ export default function TitleForm({ action, t }: { action: (f: FormData) => void
       <div className="md:col-span-2"><label className="label">{tr("form.name")}</label><input name="name" defaultValue={t?.name} className="input" required /></div>
       <div className="md:col-span-2"><label className="label">{tr("form.description")}</label><textarea name="description" defaultValue={t?.description} className="input min-h-28" required /></div>
       <div><label className="label">{tr("form.year")}</label><input name="year" type="number" defaultValue={t?.year ?? ""} className="input" /></div>
-      <div><label className="label">{tr("form.duration")}</label><input name="duration" type="number" defaultValue={t?.duration ?? ""} className="input" /></div>
+      {(isNew || t?.type === "MOVIE") && (
+        <div><label className="label">{tr(isNew ? "form.durationMovie" : "form.duration")}</label><input name="duration" type="number" min={1} defaultValue={t?.duration ?? ""} className="input" /></div>
+      )}
+      {(isNew || t?.type === "SERIES") && (
+        <div><label className="label">{tr(isNew ? "form.episodesSeries" : "form.episodes")}</label><input name="plannedEpisodes" type="number" min={1} defaultValue={t?.plannedEpisodes ?? ""} className="input" placeholder={tr("form.episodesHint")} /></div>
+      )}
       <div className="md:col-span-2"><label className="label">{tr("form.genres")}</label><input name="genres" defaultValue={t?.genres} className="input" placeholder={tr("form.genresPlaceholder")} /></div>
       <UploadField name="posterUrl" label={tr("form.poster")} kind="image" defaultValue={t?.posterUrl} />
       <UploadField name="backdropUrl" label={tr("form.backdrop")} kind="image" defaultValue={t?.backdropUrl} />
