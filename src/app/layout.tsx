@@ -21,6 +21,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Header />
         <main>{children}</main>
         <footer className="mt-20 border-t border-white/10 py-8 text-center text-sm text-neutral-500">
+          <div className="mb-2 flex justify-center gap-5">
+            <a href="/terms" className="hover:text-white">شروط الاستخدام</a>
+            <a href="/privacy" className="hover:text-white">سياسة الخصوصية</a>
+            <a href="/pricing" className="hover:text-white">الأسعار</a>
+          </div>
           © {new Date().getFullYear()} منصتي — جميع الحقوق محفوظة
         </footer>
       </body>

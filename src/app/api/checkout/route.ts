@@ -3,11 +3,14 @@ import { getUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { PLANS, type PlanId } from "@/lib/plans";
 import { stripe, demoPayments } from "@/lib/stripe";
+import { mailConfigured } from "@/lib/mail";
 
 export async function POST(req: Request) {
   const base = process.env.APP_URL || new URL(req.url).origin;
   const user = await getUser();
   if (!user) return NextResponse.redirect(`${base}/login?next=/pricing`, 303);
+
+  if (mailConfigured && !user.emailVerified) return NextResponse.redirect(`${base}/account?verify=required`, 303);
 
   const planId = String((await req.formData()).get("plan")) as PlanId;
   const plan = PLANS[planId];
