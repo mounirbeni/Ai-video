@@ -8,7 +8,7 @@ import { getT } from "@/lib/i18n/server";
 
 export const dynamic = "force-dynamic";
 
-export default async function Pay({ searchParams }: { searchParams: { item?: string } }) {
+export default async function Pay({ searchParams }: { searchParams: { item?: string; via?: string } }) {
   const item = searchParams.item ?? "";
   const user = await requireUser(`/pay?item=${item}`);
   if (!isItem(item)) redirect("/pricing");
@@ -27,7 +27,16 @@ export default async function Pay({ searchParams }: { searchParams: { item?: str
       </div>
 
       <div className="mt-8">
-        <PayForm action={submitPayment} item={item} methods={methods} />
+        <PayForm
+          action={submitPayment}
+          item={item}
+          methods={methods}
+          usd={it.usd}
+          mad={it.mad}
+          itemName={t(it.nameKey)}
+          returnUrl={`${process.env.APP_URL || ""}/pay?item=${item}&via=paypal`}
+          returned={searchParams.via === "paypal"}
+        />
       </div>
 
       <p className="mt-8 flex flex-wrap justify-center gap-x-4 gap-y-2 text-sm text-neutral-400">
