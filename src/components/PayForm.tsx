@@ -20,12 +20,25 @@ const emailIn = (text: string) => text.match(/[\w.+-]+@[\w-]+\.[\w.]+/)?.[0];
 
 // «الاسم: القيمة» → زر نسخ للقيمة؛ الروابط تصبح أزرارًا
 function Details({ text }: { text: string }) {
+  const t = useT();
   return (
     <div className="space-y-2">
       {text.split("\n").filter(Boolean).map((l, i) => {
         const url = l.match(/https?:\/\/\S+/)?.[0];
         if (url) return <a key={i} href={url} target="_blank" rel="noreferrer" className="btn-ghost w-full">{l.replace(url, "").replace(/[:\s]+$/, "") || url} ↗</a>;
         const value = valueOf(l);
+        // سطر قيمته صورة (مثل رمز QR للبنك): يُعرض مع زر حفظ لمن يدفع من نفس الهاتف
+        if (/^\/\S+\.(png|jpe?g|webp)$/i.test(value)) {
+          const label = l.slice(0, l.indexOf(":")).trim();
+          return (
+            <div key={i} className="flex flex-col items-center gap-2 pb-2">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={value} alt={label} width={180} height={180} className="h-44 w-44 rounded-lg bg-white p-2" />
+              <p className="text-center text-xs text-neutral-400">{label}</p>
+              <a href={value} download className="btn-ghost py-1.5 text-sm">{t("pay.saveQr")}</a>
+            </div>
+          );
+        }
         return (
           <div key={i} className="flex items-center justify-between gap-3 text-sm">
             <span className="min-w-0 break-words text-neutral-200" dir="auto">{l}</span>
@@ -110,7 +123,9 @@ export default function PayForm({
       })}`
     : null;
   const amountText = `${mad} MAD`;
-  const copyAll = current ? [current.name, ...current.details.split("\n").filter(Boolean), `${t("pay.amount")}: ${amountText}`].join("\n") : "";
+  const copyAll = current
+    ? [current.name, ...current.details.split("\n").filter((l) => l && !/\.(png|jpe?g|webp)$/i.test(l.trim())), `${t("pay.amount")}: ${amountText}`].join("\n")
+    : "";
 
   return (
     <form ref={form} action={formAction} className="space-y-5">
