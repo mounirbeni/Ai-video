@@ -1,5 +1,5 @@
 import { db } from "@/lib/db";
-import { ITEMS, isItem, methodsText } from "@/lib/manual";
+import { ITEMS, isItem, methodsText, getWhatsapp } from "@/lib/manual";
 import { decidePayment, generateCodes, saveMethods } from "@/app/actions/payments";
 import { getT } from "@/lib/i18n/server";
 
@@ -15,11 +15,12 @@ Téléphone: 06 00 00 00 00`;
 
 export default async function Payments() {
   const t = getT();
-  const [pending, recent, codes, methods] = await Promise.all([
+  const [pending, recent, codes, methods, whatsapp] = await Promise.all([
     db.paymentRequest.findMany({ where: { status: "pending" }, orderBy: { createdAt: "asc" }, include: { user: true } }),
     db.paymentRequest.findMany({ where: { status: { not: "pending" } }, orderBy: { decidedAt: "desc" }, take: 20, include: { user: true } }),
     db.activationCode.findMany({ where: { usedById: null }, orderBy: { createdAt: "desc" }, take: 100 }),
     methodsText(),
+    getWhatsapp(),
   ]);
   const name = (item: string) => (isItem(item) ? `${t(ITEMS[item].nameKey)} · ${ITEMS[item].usd}` : item);
 
@@ -52,6 +53,10 @@ export default async function Payments() {
         <p className="mb-3 text-sm text-neutral-400">{t("admin.methodsHelp")}</p>
         <form action={saveMethods} className="space-y-3">
           <textarea name="methods" defaultValue={methods} placeholder={EXAMPLE} rows={10} className="input font-mono text-sm" dir="auto" />
+          <div>
+            <label className="label">{t("admin.whatsapp")}</label>
+            <input name="whatsapp" defaultValue={whatsapp} inputMode="tel" dir="ltr" className="input max-w-xs" placeholder="212600000000" />
+          </div>
           <button className="btn-primary">{t("admin.save")}</button>
         </form>
       </section>

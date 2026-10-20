@@ -31,6 +31,13 @@ export async function methodsText() {
   return (await db.setting.findUnique({ where: { key: "manualMethods" } }))?.value ?? "";
 }
 
+export async function getWhatsapp() {
+  const v = (await db.setting.findUnique({ where: { key: "whatsapp" } }))?.value ?? "";
+  return v.replace(/\D/g, "");
+}
+
+export const waLink = (phone: string, text: string) => `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
+
 export async function getMethods() {
   return parseMethods(await methodsText());
 }

@@ -101,7 +101,9 @@ export async function decidePayment(id: string, approve: boolean) {
 export async function saveMethods(f: FormData) {
   await requireAdmin();
   const value = str(f, "methods").slice(0, 5000);
+  const whatsapp = str(f, "whatsapp").replace(/\D/g, "").slice(0, 20);
   await db.setting.upsert({ where: { key: "manualMethods" }, create: { key: "manualMethods", value }, update: { value } });
+  await db.setting.upsert({ where: { key: "whatsapp" }, create: { key: "whatsapp", value: whatsapp }, update: { value: whatsapp } });
   revalidatePath("/admin/payments");
   revalidatePath("/pricing");
   revalidatePath("/support");

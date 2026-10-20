@@ -58,6 +58,7 @@ export default async function TitlePage({ params }: { params: { slug: string } }
               {t.trailerUrl && inlineTrailer && (
                 <a href="#trailer" className={t.comingSoon ? "btn-primary" : "btn-ghost"}>{tr("title.watchTrailer")}</a>
               )}
+              <Link href="/support" className="btn-ghost">{tr("support.thisTitle")}</Link>
               {t.trailerUrl && !inlineTrailer && (
                 <a href={t.trailerUrl} target="_blank" rel="noreferrer" className="btn-ghost">{tr("title.trailer")}</a>
               )}
