@@ -25,7 +25,6 @@ export async function submitPayment(_: FormState, f: FormData): Promise<FormStat
   const reference = str(f, "reference").slice(0, 200) || null;
   const file = f.get("receipt");
   const receipt = file instanceof File && file.size > 0 ? file : null;
-  if (!reference && !receipt) return { error: t("pay.needRef") };
   if (receipt && (receipt.size > 5 * 1024 * 1024 || !Object.values(IMAGE_TYPES).includes(receipt.type))) {
     return { error: t("pay.badFile") };
   }

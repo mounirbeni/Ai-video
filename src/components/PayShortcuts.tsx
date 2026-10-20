@@ -17,22 +17,3 @@ export function CopyButton({ value }: { value: string }) {
     </button>
   );
 }
-
-// يختار طريقة الدفع في النموذج وينتقل إليه
-export function UseMethodButton({ name }: { name: string }) {
-  const t = useT();
-  return (
-    <button
-      type="button"
-      onClick={() => {
-        const s = document.querySelector<HTMLSelectElement>("select[name=method]");
-        if (s) s.value = name;
-        document.getElementById("confirm")?.scrollIntoView({ behavior: "smooth", block: "start" });
-        setTimeout(() => document.querySelector<HTMLInputElement>("input[name=reference]")?.focus({ preventScroll: true }), 400);
-      }}
-      className="mt-3 text-sm font-semibold text-brand-cyan hover:underline"
-    >
-      {t("pay.paidWith")} →
-    </button>
-  );
-}
