@@ -65,7 +65,7 @@ export default async function Payments() {
         </form>
       </section>
 
-      <section id="codes">
+      <section id="codes" className="scroll-mt-20">
         <h2 className="mb-4 text-xl font-bold">{t("admin.codes")}</h2>
         <form action={generateCodes} className="flex flex-wrap items-end gap-3">
           <select name="item" className="input w-auto">

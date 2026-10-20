@@ -82,6 +82,9 @@ export default async function Support({ searchParams }: { searchParams: { thanks
           })}
         </div>
         <p className="mt-8 text-center text-xs text-neutral-500">{t("support.note")}</p>
+        <p className="mt-6 text-center text-sm text-neutral-400">
+          <Link href="/redeem" className="text-brand hover:underline">{t("pay.haveCode")}</Link>
+        </p>
       </div>
     </div>
   );

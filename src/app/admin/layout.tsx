@@ -12,6 +12,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <Link href="/admin/new" className="btn-ghost py-1.5">{t("admin.add")}</Link>
         <Link href="/admin/users" className="btn-ghost py-1.5">{t("admin.users")}</Link>
         <Link href="/admin/payments" className="btn-ghost py-1.5">{t("admin.payments")}</Link>
+        <Link href="/admin/payments#codes" className="btn-ghost py-1.5">{t("admin.codes")}</Link>
       </nav>
       {children}
     </div>

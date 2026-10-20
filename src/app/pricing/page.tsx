@@ -64,6 +64,9 @@ export default async function Pricing({ searchParams }: { searchParams: { cancel
           </div>
         ))}
       </div>
+      <p className="mt-6 text-center text-sm text-neutral-400">
+        <Link href="/redeem" className="text-brand hover:underline">{t("pay.haveCode")}</Link>
+      </p>
     </div>
   );
 }
