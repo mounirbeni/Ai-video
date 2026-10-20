@@ -122,7 +122,7 @@ export default function PayForm({
         cancel_return: returnUrl.replace("&via=paypal", ""),
       })}`
     : null;
-  const amountText = `${mad} MAD`;
+  const amountText = `${mad} ${t("pay.currency")}`;
   const copyAll = current
     ? [current.name, ...current.details.split("\n").filter((l) => l && !/\.(png|jpe?g|webp)$/i.test(l.trim())), `${t("pay.amount")}: ${amountText}`].join("\n")
     : "";

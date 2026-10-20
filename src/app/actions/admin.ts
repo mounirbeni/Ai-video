@@ -17,6 +17,10 @@ function titleData(f: FormData, type: string) {
   return {
     name: str(f, "name"),
     description: str(f, "description"),
+    nameAr: opt(f, "nameAr"),
+    descriptionAr: opt(f, "descriptionAr"),
+    genresAr: opt(f, "genresAr"),
+    releaseLabelAr: opt(f, "releaseLabelAr"),
     year: int(f, "year"),
     genres: str(f, "genres"),
     posterUrl: opt(f, "posterUrl"),
@@ -63,8 +67,8 @@ export async function addEpisode(titleId: string, f: FormData) {
   const number = int(f, "number") ?? (await db.episode.count({ where: { titleId, season } })) + 1;
   await db.episode.upsert({
     where: { titleId_season_number: { titleId, season, number } },
-    update: { name: str(f, "name"), description: str(f, "description"), videoSrc: str(f, "videoSrc"), duration: int(f, "duration"), isFree: bool(f, "isFree") },
-    create: { titleId, season, number, name: str(f, "name"), description: str(f, "description"), videoSrc: str(f, "videoSrc"), duration: int(f, "duration"), isFree: bool(f, "isFree") },
+    update: { name: str(f, "name"), description: str(f, "description"), nameAr: opt(f, "nameAr"), descriptionAr: opt(f, "descriptionAr"), videoSrc: str(f, "videoSrc"), duration: int(f, "duration"), isFree: bool(f, "isFree") },
+    create: { titleId, season, number, name: str(f, "name"), description: str(f, "description"), nameAr: opt(f, "nameAr"), descriptionAr: opt(f, "descriptionAr"), videoSrc: str(f, "videoSrc"), duration: int(f, "duration"), isFree: bool(f, "isFree") },
   });
   revalidatePath(`/admin/${titleId}`);
 }

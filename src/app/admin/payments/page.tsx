@@ -15,11 +15,12 @@ Téléphone: 06 00 00 00 00`;
 
 export default async function Payments() {
   const t = getT();
-  const [pending, recent, codes, methods, whatsapp] = await Promise.all([
+  const [pending, recent, codes, methods, methodsAr, whatsapp] = await Promise.all([
     db.paymentRequest.findMany({ where: { status: "pending" }, orderBy: { createdAt: "asc" }, include: { user: true } }),
     db.paymentRequest.findMany({ where: { status: { not: "pending" } }, orderBy: { decidedAt: "desc" }, take: 20, include: { user: true } }),
     db.activationCode.findMany({ where: { usedById: null }, orderBy: { createdAt: "desc" }, take: 100 }),
-    methodsText(),
+    methodsText("en"),
+    methodsText("ar"),
     getWhatsapp(),
   ]);
   const name = (item: string) => (isItem(item) ? `${t(ITEMS[item].nameKey)} · ${ITEMS[item].usd}` : item);
@@ -52,7 +53,10 @@ export default async function Payments() {
         <h2 className="mb-2 text-xl font-bold">{t("admin.methods")}</h2>
         <p className="mb-3 text-sm text-neutral-400">{t("admin.methodsHelp")}</p>
         <form action={saveMethods} className="space-y-3">
-          <textarea name="methods" defaultValue={methods} placeholder={EXAMPLE} rows={10} className="input font-mono text-sm" dir="auto" />
+          <label className="label">English</label>
+          <textarea name="methods" defaultValue={methods} placeholder={EXAMPLE} rows={10} className="input font-mono text-sm" dir="ltr" />
+          <label className="label">العربية ({t("admin.methodsArHint")})</label>
+          <textarea name="methodsAr" defaultValue={methodsAr} rows={10} className="input font-mono text-sm" dir="rtl" />
           <div>
             <label className="label">{t("admin.whatsapp")}</label>
             <input name="whatsapp" defaultValue={whatsapp} inputMode="tel" dir="ltr" className="input max-w-xs" placeholder="212600000000" />

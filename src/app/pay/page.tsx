@@ -12,9 +12,9 @@ export default async function Pay({ searchParams }: { searchParams: { item?: str
   const item = searchParams.item ?? "";
   const user = await requireUser(`/pay?item=${item}`);
   if (!isItem(item)) redirect("/pricing");
-  const methods = await getMethods();
-  if (!methods.length) redirect("/pricing");
   const t = getT();
+  const methods = await getMethods(t.locale);
+  if (!methods.length) redirect("/pricing");
   const it = ITEMS[item];
   const whatsapp = await getWhatsapp();
 

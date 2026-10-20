@@ -1,6 +1,7 @@
 import { db } from "@/lib/db";
 import TitleCard from "@/components/TitleCard";
 import { getT } from "@/lib/i18n/server";
+import { localizeTitle } from "@/lib/i18n/localize";
 
 export const dynamic = "force-dynamic";
 
@@ -11,7 +12,7 @@ export default async function Browse({ searchParams }: { searchParams: { type?: 
     where: {
       published: true,
       ...(type && { type }),
-      ...(q && { OR: [{ name: { contains: q } }, { description: { contains: q } }, { genres: { contains: q } }] }),
+      ...(q && { OR: [{ name: { contains: q, mode: "insensitive" } }, { nameAr: { contains: q } }, { description: { contains: q, mode: "insensitive" } }, { descriptionAr: { contains: q } }, { genres: { contains: q, mode: "insensitive" } }, { genresAr: { contains: q } }] }),
     },
     orderBy: { createdAt: "desc" },
   });
@@ -27,7 +28,7 @@ export default async function Browse({ searchParams }: { searchParams: { type?: 
       <h1 className="mb-8 text-3xl font-bold">{heading}</h1>
       {items.length ? (
         <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-          {items.map((t) => <TitleCard key={t.id} t={t} />)}
+          {items.map((it) => <TitleCard key={it.id} t={localizeTitle(it, t.locale)} />)}
         </div>
       ) : (
         <p className="text-neutral-400">{t("browse.none")}</p>

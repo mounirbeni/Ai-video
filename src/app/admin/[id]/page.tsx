@@ -46,8 +46,10 @@ export default async function EditTitle({ params, searchParams }: { params: { id
             <h3 className="font-bold md:col-span-4">{tr("admin.addEpisode")}</h3>
             <div><label className="label">{tr("admin.season")}</label><input name="season" type="number" defaultValue={lastSeason} min={1} className="input" /></div>
             <div><label className="label">{tr("admin.epNumber")}</label><input name="number" type="number" min={1} className="input" placeholder={tr("admin.auto")} /></div>
-            <div className="md:col-span-2"><label className="label">{tr("admin.epTitle")}</label><input name="name" className="input" required /></div>
-            <div className="md:col-span-4"><label className="label">{tr("admin.description")}</label><textarea name="description" className="input" /></div>
+            <div className="md:col-span-2"><label className="label">{tr("admin.epTitle")} (English)</label><input name="name" className="input" dir="ltr" required /></div>
+            <div className="md:col-span-2"><label className="label">{tr("admin.epTitle")} (العربية)</label><input name="nameAr" className="input" dir="rtl" /></div>
+            <div className="md:col-span-2"><label className="label">{tr("admin.description")} (English)</label><textarea name="description" className="input" dir="ltr" /></div>
+            <div className="md:col-span-2"><label className="label">{tr("admin.description")} (العربية)</label><textarea name="descriptionAr" className="input" dir="rtl" /></div>
             <div className="md:col-span-3"><UploadField name="videoSrc" label={tr("admin.epFile")} kind="video" required /></div>
             <div><label className="label">{tr("admin.duration")}</label><input name="duration" type="number" className="input" /></div>
             <label className="flex items-center gap-2 md:col-span-4"><input type="checkbox" name="isFree" /> {tr("admin.epFreeLabel")}</label>

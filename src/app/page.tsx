@@ -2,13 +2,14 @@ import Link from "next/link";
 import { db } from "@/lib/db";
 import Row from "@/components/Row";
 import { getT } from "@/lib/i18n/server";
+import { localizeTitle } from "@/lib/i18n/localize";
 
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
   const t = getT();
   const published = { published: true, comingSoon: false };
-  const [hero, latest, movies, series, free, soon] = await Promise.all([
+  const [hero0, latest0, movies0, series0, free0, soon0] = await Promise.all([
     db.title.findFirst({ where: { published: true, featured: true }, orderBy: { createdAt: "desc" } }),
     db.title.findMany({ where: published, orderBy: { createdAt: "desc" }, take: 20 }),
     db.title.findMany({ where: { ...published, type: "MOVIE" }, orderBy: { createdAt: "desc" }, take: 20 }),
@@ -16,6 +17,9 @@ export default async function Home() {
     db.title.findMany({ where: { ...published, isFree: true }, take: 20 }),
     db.title.findMany({ where: { published: true, comingSoon: true }, orderBy: { createdAt: "desc" }, take: 20 }),
   ]);
+  const L = <X extends Parameters<typeof localizeTitle>[0]>(x: X) => localizeTitle(x, t.locale);
+  const [latest, movies, series, free, soon] = [latest0, movies0, series0, free0, soon0].map((list) => list.map(L));
+  const hero = hero0 && L(hero0);
   const h = hero ?? latest[0];
 
   return (

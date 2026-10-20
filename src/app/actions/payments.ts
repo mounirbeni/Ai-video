@@ -18,7 +18,8 @@ export async function submitPayment(_: FormState, f: FormData): Promise<FormStat
   const user = await requireUser("/pricing");
   const t = getT();
   const item = str(f, "item");
-  const methods = await getMethods();
+  // الطريقة المختارة قد تكون من النسخة العربية أو الإنجليزية
+  const methods = [...(await getMethods("en")), ...(await getMethods("ar"))];
   const method = methods.find((m) => m.name === str(f, "method"));
   if (!isItem(item) || !method) return { error: t("pay.unavailable") };
 
@@ -47,8 +48,8 @@ export async function submitPayment(_: FormState, f: FormData): Promise<FormStat
     admins.map((a) =>
       sendMail(
         a.email,
-        `New payment to confirm — ${ITEMS[item].usd} (${method.name})`,
-        `${user.name} (${user.email}) reports a payment for "${item}" via ${method.name}.\nReference: ${reference ?? "—"}\nReview it: ${site()}/admin/payments`,
+        `دفعة جديدة للتأكيد / New payment to confirm — ${ITEMS[item].usd} (${method.name})`,
+        `${user.name} (${user.email}) — ${item} — ${method.name}\nرقم العملية / Reference: ${reference ?? "—"}\n\nراجعها / Review it: ${site()}/admin/payments`,
       ).catch(() => {}),
     ),
   );
@@ -100,6 +101,8 @@ export async function decidePayment(id: string, approve: boolean) {
 export async function saveMethods(f: FormData) {
   await requireAdmin();
   const value = str(f, "methods").slice(0, 5000);
+  const valueAr = str(f, "methodsAr").slice(0, 5000);
+  await db.setting.upsert({ where: { key: "manualMethodsAr" }, create: { key: "manualMethodsAr", value: valueAr }, update: { value: valueAr } });
   const whatsapp = str(f, "whatsapp").replace(/\D/g, "").slice(0, 20);
   await db.setting.upsert({ where: { key: "manualMethods" }, create: { key: "manualMethods", value }, update: { value } });
   await db.setting.upsert({ where: { key: "whatsapp" }, create: { key: "whatsapp", value: whatsapp }, update: { value: whatsapp } });

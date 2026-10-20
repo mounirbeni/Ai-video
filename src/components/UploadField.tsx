@@ -12,6 +12,8 @@ export default function UploadField({
   const [err, setErr] = useState("");
   const t = useT();
   const FAILED = t("upload.failed");
+  // رسائل الخادم بالإنجليزية تُعرض مترجمة
+  const msg = (e?: string) => (e === "Unsupported file type" ? t("upload.unsupported") : FAILED);
 
   function send(method: string, url: string, file: File, contentType: string | null, done: (xhr: XMLHttpRequest) => void) {
     const xhr = new XMLHttpRequest();
@@ -28,7 +30,7 @@ export default function UploadField({
     setPct(0);
     const qs = `kind=${kind}&name=${encodeURIComponent(file.name)}`;
     const init = await fetch(`/api/admin/upload?${qs}`, { method: "POST" }).then((r) => r.json()).catch(() => null);
-    if (!init || init.error) { setPct(null); setErr(init?.error || FAILED); return; }
+    if (!init || init.error) { setPct(null); setErr(msg(init?.error)); return; }
 
     if (init.direct === "blob") {
       try {
@@ -57,7 +59,7 @@ export default function UploadField({
       try {
         const res = JSON.parse(xhr.responseText);
         if (xhr.status === 200) setValue(res.value);
-        else setErr(res.error || FAILED);
+        else setErr(msg(res.error));
       } catch {
         setErr(FAILED);
       }

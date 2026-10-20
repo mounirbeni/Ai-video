@@ -27,8 +27,10 @@ export function parseMethods(text: string): Method[] {
     .filter((m) => m.name);
 }
 
-export async function methodsText() {
-  return (await db.setting.findUnique({ where: { key: "manualMethods" } }))?.value ?? "";
+// manualMethods بالإنجليزية (الافتراضية) و manualMethodsAr بالعربية؛ العربية تعود للإنجليزية إن كانت فارغة
+export async function methodsText(lang: "en" | "ar" = "en") {
+  const key = lang === "ar" ? "manualMethodsAr" : "manualMethods";
+  return (await db.setting.findUnique({ where: { key } }))?.value ?? "";
 }
 
 export async function getWhatsapp() {
@@ -38,8 +40,9 @@ export async function getWhatsapp() {
 
 export const waLink = (phone: string, text: string) => `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
 
-export async function getMethods() {
-  return parseMethods(await methodsText());
+export async function getMethods(lang: "en" | "ar" = "en") {
+  const own = lang === "ar" ? parseMethods(await methodsText("ar")) : [];
+  return own.length ? own : parseMethods(await methodsText("en"));
 }
 
 export async function grantItem(userId: string, item: ItemId) {

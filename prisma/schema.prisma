@@ -69,6 +69,11 @@ model Title {
   type            String // MOVIE | SERIES
   name            String
   description     String
+  // الحقول الأساسية بالإنجليزية (لغة الموقع الافتراضية)، وهذه نسختها العربية
+  nameAr          String?
+  descriptionAr   String?
+  genresAr        String?
+  releaseLabelAr  String?
   year            Int?
   genres          String    @default("") // مفصولة بفواصل
   posterUrl       String?
@@ -87,16 +92,18 @@ model Title {
 }
 
 model Episode {
-  id          String  @id @default(cuid())
-  titleId     String
-  title       Title   @relation(fields: [titleId], references: [id], onDelete: Cascade)
-  season      Int     @default(1)
-  number      Int
-  name        String
-  description String  @default("")
-  videoSrc    String
-  duration    Int?
-  isFree      Boolean @default(false)
+  id            String  @id @default(cuid())
+  titleId       String
+  title         Title   @relation(fields: [titleId], references: [id], onDelete: Cascade)
+  season        Int     @default(1)
+  number        Int
+  name          String
+  description   String  @default("")
+  nameAr        String?
+  descriptionAr String?
+  videoSrc      String
+  duration      Int?
+  isFree        Boolean @default(false)
 
   @@unique([titleId, season, number])
 }

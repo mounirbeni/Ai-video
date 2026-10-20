@@ -3,16 +3,18 @@ import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { getUser, isSubscribed } from "@/lib/auth";
 import { genresList } from "@/lib/utils";
-import { getT } from "@/lib/i18n/server";
+import { getLocale, getT } from "@/lib/i18n/server";
+import { localizeTitle } from "@/lib/i18n/localize";
 
 export const dynamic = "force-dynamic";
 
 export default async function TitlePage({ params }: { params: { slug: string } }) {
-  const t = await db.title.findUnique({
+  const raw = await db.title.findUnique({
     where: { slug: decodeURIComponent(params.slug) },
     include: { episodes: { orderBy: [{ season: "asc" }, { number: "asc" }] } },
   });
-  if (!t || !t.published) notFound();
+  if (!raw || !raw.published) notFound();
+  const t = localizeTitle(raw, getLocale());
   const subscribed = isSubscribed(await getUser());
   const tr = getT();
   const seasons = Array.from(new Set(t.episodes.map((e) => e.season)));
