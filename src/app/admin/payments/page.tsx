@@ -73,7 +73,7 @@ export default async function Payments() {
           </select>
           <div>
             <label className="label">{t("admin.count")}</label>
-            <input name="count" type="number" min={1} max={50} defaultValue={5} className="input w-24" />
+            <input name="count" inputMode="numeric" defaultValue={5} className="input w-24" dir="ltr" />
           </div>
           <button className="btn-primary">{t("admin.generate")}</button>
         </form>

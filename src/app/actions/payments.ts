@@ -114,7 +114,9 @@ export async function saveMethods(f: FormData) {
 export async function generateCodes(f: FormData) {
   await requireAdmin();
   const item = str(f, "item");
-  const count = Math.min(Math.max(parseInt(str(f, "count")) || 1, 1), 50);
+  // يقبل الأرقام العربية (٠-٩) والفارسية (۰-۹) من لوحات المفاتيح العربية
+  const digits = str(f, "count").replace(/[٠-٩]/g, (d) => String(d.charCodeAt(0) - 0x660)).replace(/[۰-۹]/g, (d) => String(d.charCodeAt(0) - 0x6f0));
+  const count = Math.min(Math.max(parseInt(digits) || 1, 1), 50);
   if (!isItem(item)) return;
   await db.activationCode.createMany({ data: Array.from({ length: count }, () => ({ code: newCode(), item })) });
   redirect("/admin/payments#codes");
