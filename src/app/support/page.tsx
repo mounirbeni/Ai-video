@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { getUser } from "@/lib/auth";
 import { SUPPORT_TIERS } from "@/lib/plans";
-import { paddle, paddleEnv, supportPrice } from "@/lib/paddle";
+import { paddleCheckout, paddleEnv, supportPrice } from "@/lib/paddle";
+import { getMethods } from "@/lib/manual";
 import PaddleCheckout from "@/components/PaddleCheckout";
 import { getT } from "@/lib/i18n/server";
 
@@ -15,6 +16,7 @@ export function generateMetadata() {
 export default async function Support({ searchParams }: { searchParams: { thanks?: string } }) {
   const user = await getUser();
   const t = getT();
+  const manual = !paddleCheckout && (await getMethods()).length > 0;
 
   return (
     <div className="relative overflow-hidden">
@@ -54,7 +56,11 @@ export default async function Support({ searchParams }: { searchParams: { thanks
                   ))}
                 </ul>
                 <div className="mt-auto">
-                  {!paddle || !price ? (
+                  {manual ? (
+                    <Link href={user ? `/pay?item=${tier.id}` : `/login?next=/pay?item=${tier.id}`} className={featured ? "btn-primary w-full" : "btn-ghost w-full"}>
+                      {user ? t("support.cta", { price: tier.price }) : t("support.signIn")}
+                    </Link>
+                  ) : !paddleCheckout || !price ? (
                     <button disabled className="btn-ghost w-full cursor-not-allowed opacity-60">{t("pricing.soon")}</button>
                   ) : user ? (
                     <PaddleCheckout

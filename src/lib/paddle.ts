@@ -4,6 +4,8 @@ import { PLANS, SUPPORT_TIERS, type PlanId, type SupportTierId } from "./plans";
 // Paddle Billing — بائع رسمي (Merchant of Record) يدعم البائعين من المغرب
 export const paddleEnv = process.env.PADDLE_ENV === "production" ? "production" : "sandbox";
 export const paddle = !!(process.env.PADDLE_API_KEY && process.env.PADDLE_CLIENT_TOKEN);
+// PADDLE_CHECKOUT=off يخفي نافذة Paddle (مثلًا قبل تفعيل الحساب) ويحوّل الأزرار إلى الدفع اليدوي
+export const paddleCheckout = paddle && process.env.PADDLE_CHECKOUT !== "off";
 const API = paddleEnv === "production" ? "https://api.paddle.com" : "https://sandbox-api.paddle.com";
 
 export function paddlePrice(plan: PlanId) {

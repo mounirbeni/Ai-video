@@ -2,7 +2,8 @@ import Link from "next/link";
 import { getUser, isSubscribed } from "@/lib/auth";
 import { PLANS } from "@/lib/plans";
 import { demoPayments, stripe } from "@/lib/stripe";
-import { paddle, paddleEnv, paddlePrice } from "@/lib/paddle";
+import { paddleCheckout, paddleEnv, paddlePrice } from "@/lib/paddle";
+import { getMethods } from "@/lib/manual";
 import PaddleCheckout from "@/components/PaddleCheckout";
 import { getT } from "@/lib/i18n/server";
 
@@ -14,7 +15,8 @@ export default async function Pricing({ searchParams }: { searchParams: { cancel
   const subscribed = isSubscribed(user);
   const t = getT();
   // لا شركة دفع مفعّلة بعد: نعرض «قريبًا» بدل زر يقود إلى خطأ
-  const payable = demoPayments || !!stripe || paddle;
+  const manual = !paddleCheckout && (await getMethods()).length > 0;
+  const payable = demoPayments || !!stripe || paddleCheckout || manual;
   const FEATURES = [t("pricing.f1"), t("pricing.f2"), t("pricing.f3"), t("pricing.f4")];
 
   return (
@@ -44,7 +46,11 @@ export default async function Pricing({ searchParams }: { searchParams: { cancel
                 <Link href="/account" className="btn-ghost w-full">{t("pricing.subscribed")}</Link>
               ) : !payable ? (
                 <button disabled className="btn-ghost w-full cursor-not-allowed opacity-60">{t("pricing.soon")}</button>
-              ) : user && paddle && paddlePrice(p.id) ? (
+              ) : manual ? (
+                <Link href={user ? `/pay?item=${p.id}` : `/register?next=/pay?item=${p.id}`} className="btn-primary w-full">
+                  {user ? t("pricing.subscribe") : t("pricing.createToSubscribe")}
+                </Link>
+              ) : user && paddleCheckout && paddlePrice(p.id) ? (
                 <PaddleCheckout priceId={paddlePrice(p.id)!} token={process.env.PADDLE_CLIENT_TOKEN!} env={paddleEnv} email={user.email} userId={user.id} />
               ) : user ? (
                 <form action="/api/checkout" method="post">

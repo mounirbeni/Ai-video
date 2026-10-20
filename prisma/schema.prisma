@@ -10,25 +10,26 @@ datasource db {
 }
 
 model User {
-  id                 String    @id @default(cuid())
-  email              String    @unique
+  id                 String           @id @default(cuid())
+  email              String           @unique
   name               String
   passwordHash       String
-  role               String    @default("USER") // USER | ADMIN
-  stripeCustomerId   String?   @unique
-  paddleCustomerId   String?   @unique
+  role               String           @default("USER") // USER | ADMIN
+  stripeCustomerId   String?          @unique
+  paddleCustomerId   String?          @unique
   subscriptionId     String?
-  subscriptionStatus String    @default("none") // none | active | trialing | past_due | canceled
+  subscriptionStatus String           @default("none") // none | active | trialing | past_due | canceled
   subscriptionPlan   String?
   currentPeriodEnd   DateTime?
   accessUntil        DateTime? // أيام مشاهدة مُهداة مع باقات الدعم (مستقلة عن الاشتراك)
   supporterSince     DateTime?
   emailVerified      DateTime?
-  createdAt          DateTime  @default(now())
+  createdAt          DateTime         @default(now())
   progress           WatchProgress[]
   tokens             AuthToken[]
   streams            ActiveStream[]
   supports           Support[]
+  payments           PaymentRequest[]
 }
 
 // دفعات الدعم لمرة واحدة؛ المعرّف هو رقم معاملة Paddle فلا تُحتسب الدفعة مرتين عند إعادة إرسال الإشعار
@@ -63,26 +64,26 @@ model AuthToken {
 }
 
 model Title {
-  id          String    @id @default(cuid())
-  slug        String    @unique
-  type        String // MOVIE | SERIES
-  name        String
-  description String
-  year        Int?
-  genres      String    @default("") // مفصولة بفواصل
-  posterUrl   String?
-  backdropUrl String?
-  trailerUrl  String?
-  videoSrc    String? // للأفلام: local:<file> أو رابط https
-  duration    Int? // بالدقائق — للأفلام فقط
+  id              String    @id @default(cuid())
+  slug            String    @unique
+  type            String // MOVIE | SERIES
+  name            String
+  description     String
+  year            Int?
+  genres          String    @default("") // مفصولة بفواصل
+  posterUrl       String?
+  backdropUrl     String?
+  trailerUrl      String?
+  videoSrc        String? // للأفلام: local:<file> أو رابط https
+  duration        Int? // بالدقائق — للأفلام فقط
   plannedEpisodes Int? // للمسلسلات: عدد الحلقات المعلن قبل رفعها
-  isFree      Boolean   @default(false)
-  featured    Boolean   @default(false)
-  comingSoon  Boolean   @default(false) // يُعرض في «قريبًا» ولا يمكن مشاهدته بعد
-  releaseLabel String? // مثل «ديسمبر 2026»
-  published   Boolean   @default(true)
-  createdAt   DateTime  @default(now())
-  episodes    Episode[]
+  isFree          Boolean   @default(false)
+  featured        Boolean   @default(false)
+  comingSoon      Boolean   @default(false) // يُعرض في «قريبًا» ولا يمكن مشاهدته بعد
+  releaseLabel    String? // مثل «ديسمبر 2026»
+  published       Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  episodes        Episode[]
 }
 
 model Episode {
@@ -109,4 +110,33 @@ model WatchProgress {
   updatedAt DateTime @updatedAt
 
   @@unique([userId, key])
+}
+
+// الدفع اليدوي: تحويل بنكي/CashPlus/… يؤكده المدير يدويًا من لوحة الإدارة
+model PaymentRequest {
+  id         String    @id @default(cuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  item       String // monthly | yearly | fan | supporter | producer
+  method     String
+  reference  String?
+  receiptKey String? // مسار صورة الإيصال في التخزين الخاص
+  status     String    @default("pending") // pending | approved | rejected
+  createdAt  DateTime  @default(now())
+  decidedAt  DateTime?
+}
+
+// أكواد تفعيل مسبقة الدفع تباع خارج الموقع
+model ActivationCode {
+  code      String    @id
+  item      String
+  usedById  String?
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+}
+
+// إعدادات قابلة للتعديل من لوحة الإدارة (مثل طرق الدفع اليدوي)
+model Setting {
+  key   String @id
+  value String
 }

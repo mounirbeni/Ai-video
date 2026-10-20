@@ -5,6 +5,8 @@ import { stripe } from "@/lib/stripe";
 import { paddle } from "@/lib/paddle";
 import { logout, resendVerification } from "@/app/actions/auth";
 import { getT } from "@/lib/i18n/server";
+import { db } from "@/lib/db";
+import { ITEMS, isItem } from "@/lib/manual";
 
 export const dynamic = "force-dynamic";
 
@@ -14,6 +16,7 @@ export default async function Account({ searchParams }: { searchParams: { succes
   const sub = isSubscribed(user);
   const plan = user.subscriptionPlan ? PLANS[user.subscriptionPlan as PlanId] : null;
   const t = getT();
+  const payments = await db.paymentRequest.findMany({ where: { userId: user.id }, orderBy: { createdAt: "desc" }, take: 10 });
   const status = (s: string) => (["none", "active", "trialing", "past_due", "canceled"].includes(s) ? t(`status.${s}` as "status.none") : s);
 
   return (
@@ -54,6 +57,24 @@ export default async function Account({ searchParams }: { searchParams: { succes
           )}
         </div>
       </div>
+      {payments.length > 0 && (
+        <div className="card mt-6">
+          <h2 className="mb-3 text-lg font-bold">{t("pay.history")}</h2>
+          <div className="divide-y divide-white/5 text-sm">
+            {payments.map((p) => (
+              <div key={p.id} className="flex flex-wrap justify-between gap-2 py-2">
+                <span>{isItem(p.item) ? `${t(ITEMS[p.item].nameKey)} · ${ITEMS[p.item].usd}` : p.item} — {p.method}</span>
+                <span className={p.status === "approved" ? "text-green-400" : p.status === "rejected" ? "text-red-400" : "text-amber-300"}>
+                  {t(`pay.status.${p.status as "pending"}`)}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+      <p className="mt-6 text-center text-sm">
+        <Link href="/redeem" className="text-brand hover:underline">{t("pay.haveCode")}</Link>
+      </p>
     </div>
   );
 }
