@@ -23,7 +23,8 @@ function Details({ text }: { text: string }) {
         return (
           <div key={i} className="flex items-center justify-between gap-3 text-sm">
             <span className="min-w-0 break-words text-neutral-200" dir="auto">{l}</span>
-            {value.length >= 4 && <CopyButton value={value} />}
+            {/* أرقام الحساب تُنسخ بلا مسافات لأن بعض تطبيقات البنوك ترفضها */}
+            {value.length >= 4 && <CopyButton value={/^[A-Z0-9 +]+$/i.test(value) && /\d/.test(value) ? value.replace(/\s/g, "") : value} />}
           </div>
         );
       })}
