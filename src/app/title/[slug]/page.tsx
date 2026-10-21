@@ -43,6 +43,7 @@ export default async function TitlePage({ params }: { params: { slug: string } }
               {t.type === "SERIES" && (t.episodes.length || t.plannedEpisodes) ? (
                 <span>• {(t.episodes.length || t.plannedEpisodes) === 1 ? tr("title.episode") : tr("title.episodes", { n: t.episodes.length || t.plannedEpisodes! })}</span>
               ) : null}
+              {t.language && <span>• {tr(`lang.${t.language}` as "lang.en")}</span>}
               {genresList(t.genres).map((g) => (
                 <span key={g} className="rounded bg-white/10 px-2">{g}</span>
               ))}

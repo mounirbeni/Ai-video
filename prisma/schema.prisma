@@ -82,6 +82,7 @@ model Title {
   videoSrc        String? // للأفلام: local:<file> أو رابط https
   duration        Int? // بالدقائق — للأفلام فقط
   plannedEpisodes Int? // للمسلسلات: عدد الحلقات المعلن قبل رفعها
+  language        String? // رمز لغة العمل الأصلية مثل en
   isFree          Boolean   @default(false)
   featured        Boolean   @default(false)
   comingSoon      Boolean   @default(false) // يُعرض في «قريبًا» ولا يمكن مشاهدته بعد
