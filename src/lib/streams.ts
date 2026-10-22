@@ -2,6 +2,7 @@ import crypto from "node:crypto";
 import { cookies } from "next/headers";
 import { db } from "./db";
 import type { SessionUser } from "./auth";
+import { streamLimit } from "./access";
 
 export const MAX_STREAMS = Number(process.env.MAX_STREAMS || 2);
 const ACTIVE_MS = 90_000; // الجهاز نشط إن أرسل نبضة خلال 90 ثانية
@@ -29,7 +30,7 @@ export async function claimStream(user: SessionUser, device: string) {
   const others = await db.activeStream.count({
     where: { userId: user.id, deviceId: { not: device }, lastSeen: { gt: since } },
   });
-  if (others >= MAX_STREAMS) return false;
+  if (others >= streamLimit(user)) return false;
   await db.activeStream.upsert({
     where: { userId_deviceId: { userId: user.id, deviceId: device } },
     update: { lastSeen: new Date() },

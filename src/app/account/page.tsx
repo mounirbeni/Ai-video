@@ -8,7 +8,8 @@ import { getT } from "@/lib/i18n/server";
 import { localizeTitle } from "@/lib/i18n/localize";
 import { db } from "@/lib/db";
 import { ITEMS, isItem, getWhatsapp, waLink } from "@/lib/manual";
-import { MAX_STREAMS } from "@/lib/streams";
+import { accessKind, streamLimit } from "@/lib/access";
+import PlanBadge from "@/components/PlanBadge";
 import { contactEmail } from "@/lib/contact";
 import SimpleForm from "@/components/SimpleForm";
 import {
@@ -100,6 +101,7 @@ export default async function Account({ searchParams }: { searchParams: { succes
           </div>
         </div>
         <div className="relative mt-4 flex flex-wrap gap-2 text-xs">
+          <PlanBadge kind={accessKind(user)} label={t(`plan.kind.${accessKind(user)}`)} />
           <span className="rounded-full bg-white/5 px-3 py-1 text-neutral-300 ring-1 ring-white/10">
             {t("account.memberSince", { date: user.createdAt.toLocaleDateString(t.locale, { month: "long", year: "numeric" }) })}
           </span>
@@ -124,7 +126,7 @@ export default async function Account({ searchParams }: { searchParams: { succes
         {[
           { icon: <FilmIcon className="h-5 w-5" />, n: seen.size, label: t("account.statWatched") },
           { icon: <CardIcon className="h-5 w-5" />, n: payments.filter((p) => p.status === "approved").length, label: t("account.statPayments") },
-          { icon: <ScreenIcon className="h-5 w-5" />, n: MAX_STREAMS, label: t("account.statDevices") },
+          { icon: <ScreenIcon className="h-5 w-5" />, n: streamLimit(user), label: t("account.statDevices") },
         ].map((s) => (
           <div key={s.label} className="card flex flex-col items-center gap-1 p-4 text-center">
             <span className="text-brand">{s.icon}</span>

@@ -23,6 +23,7 @@ model User {
   subscriptionPlan   String?
   currentPeriodEnd   DateTime?
   accessUntil        DateTime? // أيام مشاهدة مُهداة مع باقات الدعم (مستقلة عن الاشتراك)
+  accessPlan         String? // monthly | yearly: آخر خطة مدفوعة مسبقًا، تحدد عدد الشاشات
   supporterSince     DateTime?
   emailVerified      DateTime?
   createdAt          DateTime         @default(now())

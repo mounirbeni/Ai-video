@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getUser } from "@/lib/auth";
-import { MAX_STREAMS, claimStream, deviceId, releaseStream } from "@/lib/streams";
+import { claimStream, deviceId, releaseStream } from "@/lib/streams";
+import { streamLimit } from "@/lib/access";
 
 // نبضة أثناء التشغيل: تبقي الجهاز نشطًا، أو توقفه إن شوهد الحساب على أجهزة أكثر من المسموح
 export async function POST(req: Request) {
@@ -12,5 +13,5 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: true });
   }
   const ok = await claimStream(user, device);
-  return NextResponse.json(ok ? { ok } : { ok, max: MAX_STREAMS }, { status: ok ? 200 : 429 });
+  return NextResponse.json(ok ? { ok } : { ok, max: streamLimit(user) }, { status: ok ? 200 : 429 });
 }

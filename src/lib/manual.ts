@@ -50,9 +50,12 @@ export async function grantItem(userId: string, item: ItemId) {
   const user = await db.user.findUniqueOrThrow({ where: { id: userId } });
   const base = user.accessUntil && user.accessUntil > new Date() ? user.accessUntil : new Date();
   const accessUntil = new Date(base.getTime() + it.days * 86400000);
+  // الخطة السنوية النشطة لا تُخفَّض إلى شهرية عند التمديد
+  const keepYearly = user.accessPlan === "yearly" && user.accessUntil && user.accessUntil > new Date();
+  const accessPlan = item === "yearly" || item === "monthly" ? (keepYearly ? "yearly" : item) : undefined;
   await db.user.update({
     where: { id: userId },
-    data: { accessUntil, ...(it.supporter && !user.supporterSince ? { supporterSince: new Date() } : {}) },
+    data: { accessUntil, ...(accessPlan ? { accessPlan } : {}), ...(it.supporter && !user.supporterSince ? { supporterSince: new Date() } : {}) },
   });
   return accessUntil;
 }
