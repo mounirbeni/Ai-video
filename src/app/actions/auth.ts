@@ -37,15 +37,20 @@ export async function register(_: FormState, form: FormData): Promise<FormState>
   const name = String(form.get("name") || "").trim();
   const email = String(form.get("email") || "").trim().toLowerCase();
   const password = String(form.get("password") || "");
+  const username = String(form.get("username") || "").trim().toLowerCase();
   const t = getT();
   if (!name || !email.includes("@")) return { error: t("err.nameEmail") };
+  // أحرف فقط (أي لغة)، 6 على الأقل، بلا أرقام أو رموز
+  if (!/^\p{L}{6,20}$/u.test(username)) return { error: t("err.username") };
   if (password.length < 8) return { error: t("err.passwordLength") };
   if (form.get("terms") !== "on") return { error: t("err.terms") };
   if (await db.user.findUnique({ where: { email } })) return { error: t("err.emailTaken") };
+  if (await db.user.findUnique({ where: { username } })) return { error: t("err.usernameTaken") };
 
-  const user = await db.user.create({
-    data: { name, email, passwordHash: await bcrypt.hash(password, 10) },
-  });
+  const user = await db.user
+    .create({ data: { name, email, username, passwordHash: await bcrypt.hash(password, 10) } })
+    .catch(() => null); // تسجيلان متزامنان بنفس الاسم
+  if (!user) return { error: t("err.usernameTaken") };
   await sendVerification(user);
   await createSession(user.id);
   redirect(form.get("next") ? safeNext(form.get("next")) : "/pricing");

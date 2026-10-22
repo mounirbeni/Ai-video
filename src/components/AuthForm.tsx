@@ -20,6 +20,13 @@ export default function AuthForm({
       {mode === "register" && (
         <div><label className="label">{t("auth.name")}</label><input name="name" className="input" required /></div>
       )}
+      {mode === "register" && (
+        <div>
+          <label className="label">{t("auth.username")}</label>
+          <input name="username" className="input" required minLength={6} maxLength={20} pattern="\p{L}{6,20}" autoComplete="username" dir="auto" />
+          <p className="mt-1 text-xs text-neutral-500">{t("auth.usernameHint")}</p>
+        </div>
+      )}
       <div><label className="label">{t("auth.email")}</label><input name="email" type="email" className="input" required dir="ltr" /></div>
       <div><label className="label">{t("auth.password")}</label><input name="password" type="password" className="input" required minLength={mode === "register" ? 8 : undefined} dir="ltr" /></div>
       {mode === "register" && (

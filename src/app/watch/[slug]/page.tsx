@@ -58,7 +58,7 @@ export default async function Watch({ params, searchParams }: { params: { slug: 
         src={ep ? `/api/stream/episode/${ep.id}` : `/api/stream/title/${t.id}`}
         poster={ep?.thumbUrl || t.backdropUrl || t.posterUrl || undefined}
         progressKey={user ? key : undefined}
-        watermark={user ? `${user.email} · ${user.id.slice(-6)}` : undefined}
+        watermark={user ? `${user.username ?? user.email} · ${user.id.slice(-6)}` : undefined}
         startAt={progress?.seconds ?? 0}
         nextHref={next ? `/watch/${t.slug}?ep=${next.id}` : undefined}
       />
