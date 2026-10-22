@@ -5,6 +5,7 @@ import { getUser, isSubscribed } from "@/lib/auth";
 import { genresList } from "@/lib/utils";
 import { getLocale, getT } from "@/lib/i18n/server";
 import { localizeTitle } from "@/lib/i18n/localize";
+import { HeartIcon, LockIcon, PlayIcon } from "@/components/Icons";
 
 export const dynamic = "force-dynamic";
 
@@ -55,13 +56,13 @@ export default async function TitlePage({ params }: { params: { slug: string } }
               )}
               {!t.comingSoon && (t.type === "MOVIE" || t.episodes.length > 0) && (
                 <Link href={`/watch/${t.slug}`} className="btn-primary">
-                  {subscribed || t.isFree ? tr("title.watch") : tr("title.subscribeToWatch")}
+                  {subscribed || t.isFree ? <><PlayIcon />{tr("title.watch")}</> : <><LockIcon />{tr("title.subscribeToWatch")}</>}
                 </Link>
               )}
               {t.trailerUrl && inlineTrailer && (
-                <a href="#trailer" className={t.comingSoon ? "btn-primary" : "btn-ghost"}>{tr("title.watchTrailer")}</a>
+                <a href="#trailer" className={t.comingSoon ? "btn-primary" : "btn-ghost"}><PlayIcon />{tr("title.watchTrailer")}</a>
               )}
-              <Link href="/support" className="btn-ghost">{tr("support.thisTitle")}</Link>
+              <Link href="/support" className="btn-ghost"><HeartIcon />{tr("support.thisTitle")}</Link>
               {t.trailerUrl && !inlineTrailer && (
                 <a href={t.trailerUrl} target="_blank" rel="noreferrer" className="btn-ghost">{tr("title.trailer")}</a>
               )}
@@ -110,7 +111,7 @@ export default async function TitlePage({ params }: { params: { slug: string } }
                         {e.description && <p className="line-clamp-2 text-sm text-neutral-400">{e.description}</p>}
                       </div>
                       {e.duration && <span className="text-sm text-neutral-500">{tr("title.minShort", { n: e.duration })}</span>}
-                      <span>{open ? "▶" : "🔒"}</span>
+                      <span className="text-neutral-400">{open ? <PlayIcon className="h-5 w-5" /> : <LockIcon className="h-5 w-5" />}</span>
                     </Link>
                   );
                 })}

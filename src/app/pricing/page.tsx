@@ -6,6 +6,7 @@ import { paddleCheckout, paddleEnv, paddlePrice } from "@/lib/paddle";
 import { getMethods } from "@/lib/manual";
 import PaddleCheckout from "@/components/PaddleCheckout";
 import { getT } from "@/lib/i18n/server";
+import { CheckIcon } from "@/components/Icons";
 
 export const dynamic = "force-dynamic";
 
@@ -39,7 +40,7 @@ export default async function Pricing({ searchParams }: { searchParams: { cancel
             <h2 className="text-xl font-bold">{t(p.nameKey)}</h2>
             <p className="mt-3 text-4xl font-extrabold">{p.price}<span className="text-base font-normal text-neutral-400"> / {t(p.periodKey)}</span></p>
             <ul className="my-6 space-y-2 text-neutral-300">
-              {FEATURES.map((f) => <li key={f}>✓ {f}</li>)}
+              {FEATURES.map((f) => <li key={f} className="flex items-center gap-2"><CheckIcon className="h-4 w-4 shrink-0 text-brand-cyan" />{f}</li>)}
             </ul>
             <div className="mt-auto">
               {subscribed ? (

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useT } from "@/lib/i18n/client";
+import { CloseIcon } from "@/components/Icons";
 
 type BIP = Event & { prompt: () => Promise<void> };
 
@@ -40,7 +41,7 @@ export default function InstallPrompt() {
       {evt && (
         <button className="btn-primary px-3 py-1.5 text-sm" onClick={() => evt.prompt().finally(close)}>{t("install.button")}</button>
       )}
-      <button aria-label={t("install.close")} className="px-1 text-neutral-400" onClick={close}>✕</button>
+      <button aria-label={t("install.close")} className="px-1 text-neutral-400" onClick={close}><CloseIcon /></button>
     </div>
   );
 }

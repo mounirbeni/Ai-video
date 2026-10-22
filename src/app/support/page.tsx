@@ -5,6 +5,7 @@ import { paddleCheckout, paddleEnv, supportPrice } from "@/lib/paddle";
 import { getMethods } from "@/lib/manual";
 import PaddleCheckout from "@/components/PaddleCheckout";
 import { getT } from "@/lib/i18n/server";
+import { CheckIcon } from "@/components/Icons";
 
 export const dynamic = "force-dynamic";
 
@@ -52,7 +53,7 @@ export default async function Support({ searchParams }: { searchParams: { thanks
                 </p>
                 <ul className="my-6 space-y-2 text-sm text-neutral-300">
                   {perks.map((p) => (
-                    <li key={p} className="flex gap-2"><span className="text-brand-cyan">✦</span>{p}</li>
+                    <li key={p} className="flex items-center gap-2"><CheckIcon className="h-4 w-4 shrink-0 text-brand-cyan" />{p}</li>
                   ))}
                 </ul>
                 <div className="mt-auto">

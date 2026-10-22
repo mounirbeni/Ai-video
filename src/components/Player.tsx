@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useT } from "@/lib/i18n/client";
+import { ExpandIcon } from "@/components/Icons";
 
 type Props = {
   src: string;
@@ -169,7 +170,7 @@ export default function Player({ src, poster, progressKey, startAt, nextHref, wa
         aria-label={t("player.fullscreen")}
         className="absolute end-3 top-3 rounded-md bg-black/50 px-2.5 py-1 text-sm text-white/80 hover:bg-black/70"
       >
-        ⛶
+        <ExpandIcon />
       </button>
       {watermark && (
         <span

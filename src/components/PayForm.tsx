@@ -6,6 +6,7 @@ import type { FormState } from "@/app/actions/auth";
 import type { Method } from "@/lib/manual";
 import { useT } from "@/lib/i18n/client";
 import { CopyButton } from "./PayShortcuts";
+import { CheckCircleIcon, ExternalIcon } from "@/components/Icons";
 
 function Submit({ label }: { label: string }) {
   const { pending } = useFormStatus();
@@ -25,7 +26,7 @@ function Details({ text }: { text: string }) {
     <div className="space-y-2">
       {text.split("\n").filter(Boolean).map((l, i) => {
         const url = l.match(/https?:\/\/\S+/)?.[0];
-        if (url) return <a key={i} href={url} target="_blank" rel="noreferrer" className="btn-ghost w-full">{l.replace(url, "").replace(/[:\s]+$/, "") || url} ↗</a>;
+        if (url) return <a key={i} href={url} target="_blank" rel="noreferrer" className="btn-ghost w-full">{l.replace(url, "").replace(/[:\s]+$/, "") || url}<ExternalIcon /></a>;
         const value = valueOf(l);
         // سطر قيمته صورة (مثل رمز QR للبنك): يُعرض مع زر حفظ لمن يدفع من نفس الهاتف
         if (/^\/\S+\.(png|jpe?g|webp)$/i.test(value)) {
@@ -103,7 +104,7 @@ export default function PayForm({
   if (state?.ok) {
     return (
       <div className="card text-center">
-        <p className="text-4xl">✓</p>
+        <CheckCircleIcon className="mx-auto h-12 w-12 text-green-400" />
         <p className="mt-3 text-green-300">{state.ok}</p>
       </div>
     );

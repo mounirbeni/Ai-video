@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import Row from "@/components/Row";
 import { getT } from "@/lib/i18n/server";
 import { localizeTitle } from "@/lib/i18n/localize";
+import { PlayIcon } from "@/components/Icons";
 
 export const dynamic = "force-dynamic";
 
@@ -39,9 +40,9 @@ export default async function Home() {
               {h.comingSoon ? (
                 <span className="btn bg-amber-500/20 text-amber-300">{t("badge.soon")}{h.releaseLabel && ` · ${h.releaseLabel}`}</span>
               ) : (
-                <Link href={`/watch/${h.slug}`} className="btn-primary">{t("home.watch")}</Link>
+                <Link href={`/watch/${h.slug}`} className="btn-primary"><PlayIcon />{t("home.watch")}</Link>
               )}
-              {h.trailerUrl && <Link href={`/title/${h.slug}#trailer`} className="btn-ghost">{t("title.watchTrailer")}</Link>}
+              {h.trailerUrl && <Link href={`/title/${h.slug}#trailer`} className="btn-ghost"><PlayIcon />{t("title.watchTrailer")}</Link>}
               <Link href={`/title/${h.slug}`} className="btn-ghost">{t("home.more")}</Link>
             </div>
           </div>

@@ -7,6 +7,7 @@ import { logout, resendVerification } from "@/app/actions/auth";
 import { getT } from "@/lib/i18n/server";
 import { db } from "@/lib/db";
 import { ITEMS, isItem } from "@/lib/manual";
+import { SparkleIcon } from "@/components/Icons";
 
 export const dynamic = "force-dynamic";
 
@@ -37,7 +38,7 @@ export default async function Account({ searchParams }: { searchParams: { succes
       )}
       <div className="card space-y-3">
         {user.supporterSince && (
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-brand-violet/25 to-brand-cyan/25 px-3 py-1 text-sm text-white ring-1 ring-brand-violet/40">✦ {t("account.supporter")}</span>
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-brand-violet/25 to-brand-cyan/25 px-3 py-1 text-sm text-white ring-1 ring-brand-violet/40"><SparkleIcon className="h-3.5 w-3.5" />{t("account.supporter")}</span>
         )}
         <p><span className="text-neutral-400">{t("account.name")} </span>{user.name}</p>
         <p><span className="text-neutral-400">{t("account.email")} </span>{user.email}</p>
