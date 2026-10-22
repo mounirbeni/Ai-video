@@ -23,7 +23,7 @@ export default function AuthForm({
       {mode === "register" && (
         <div>
           <label className="label">{t("auth.username")}</label>
-          <input name="username" className="input" required minLength={6} maxLength={20} pattern="\p{L}{6,20}" autoComplete="username" dir="auto" />
+          <input name="username" className="input" required minLength={6} maxLength={6} pattern="\p{L}{6}" autoComplete="username" dir="auto" />
           <p className="mt-1 text-xs text-neutral-500">{t("auth.usernameHint")}</p>
         </div>
       )}

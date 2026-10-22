@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { getUser, isSubscribed } from "@/lib/auth";
 import Player from "@/components/Player";
@@ -18,6 +18,11 @@ export default async function Watch({ params, searchParams }: { params: { slug: 
   const t = localizeTitle(raw, getLocale());
 
   const user = await getUser();
+  // الحسابات القديمة تختار اسم مستخدم قبل المشاهدة (يظهر في العلامة المائية)
+  if (user && !user.username) {
+    const qs = searchParams.ep ? `?ep=${searchParams.ep}` : "";
+    redirect(`/choose-username?next=${encodeURIComponent(`/watch/${params.slug}${qs}`)}`);
+  }
   const tr = getT();
   if (t.comingSoon && user?.role !== "ADMIN") {
     return (
