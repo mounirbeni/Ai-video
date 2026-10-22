@@ -7,6 +7,7 @@ import PayForm from "@/components/PayForm";
 import PayPalButtons from "@/components/PayPalButtons";
 import { paypalLive } from "@/lib/paypal";
 import { getT } from "@/lib/i18n/server";
+import { CheckIcon, ClockIcon, LockIcon, ShieldIcon, SparkleIcon } from "@/components/Icons";
 
 export const dynamic = "force-dynamic";
 
@@ -20,19 +21,62 @@ export default async function Pay({ searchParams }: { searchParams: { item?: str
   const it = ITEMS[item];
   const whatsapp = await getWhatsapp();
 
-  return (
-    <div className="mx-auto max-w-md px-4 py-10">
-      <div className="text-center">
-        <p className="text-sm text-neutral-400">{t(it.nameKey)}</p>
-        <p className="mt-1 text-5xl font-extrabold">{it.usd}</p>
-        <p className="mt-1 text-brand-cyan">{t("pay.mad", { mad: it.mad })}</p>
-      </div>
+  const perks = [
+    t("support.days", { days: it.days, unit: it.days <= 10 ? "أيام" : "يومًا" }),
+    ...(it.supporter ? [t("support.badge")] : []),
+    ...(item === "producer" ? [t("support.credit")] : []),
+    t("pay.instantDays"),
+  ];
 
-      {paypalLive && (
-        <div className="mt-8">
-          <PayPalButtons clientId={process.env.PAYPAL_CLIENT_ID!} item={item} />
+  return (
+    <div className="relative overflow-hidden">
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-80 bg-[radial-gradient(36rem_14rem_at_50%_0%,rgba(124,92,255,.28),transparent)]" />
+      <div className="relative mx-auto max-w-md px-4 py-10">
+        <Link href={it.supporter ? "/support" : "/pricing"} className="text-sm text-neutral-400 hover:text-white">{t("pay.cancel")}</Link>
+
+        {/* ملخص الطلب */}
+        <div className="mt-4 overflow-hidden rounded-2xl border border-brand-violet/40 bg-neutral-900/80 shadow-[0_0_40px_-14px_rgba(124,92,255,.7)]">
+          <div className="bg-gradient-to-r from-brand-violet/30 via-brand-blue/20 to-brand-cyan/20 px-5 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-brand-cyan">
+            {t("pay.summary")}
+          </div>
+          <div className="p-5">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="flex items-center gap-1.5 text-lg font-bold">
+                  {it.supporter && <SparkleIcon className="h-4 w-4 text-brand-cyan" />}
+                  {t(it.nameKey)}
+                </p>
+                <p className="mt-0.5 font-logo text-[11px] tracking-[0.2em] text-neutral-500" dir="ltr">NEXORA</p>
+              </div>
+              <div className="text-end">
+                <p className="text-3xl font-extrabold">{it.usd}</p>
+                <p className="text-xs text-neutral-400">{t("pay.mad", { mad: it.mad })}</p>
+              </div>
+            </div>
+            <ul className="mt-4 space-y-2 border-t border-white/10 pt-4 text-sm text-neutral-300">
+              {perks.map((p) => (
+                <li key={p} className="flex items-center gap-2"><CheckIcon className="h-4 w-4 shrink-0 text-brand-cyan" />{p}</li>
+              ))}
+            </ul>
+            <div className="mt-4 flex items-center justify-between border-t border-white/10 pt-4">
+              <span className="text-neutral-400">{t("pay.total")}</span>
+              <span className="text-xl font-extrabold text-gradient">{it.usd} USD</span>
+            </div>
+          </div>
         </div>
-      )}
+
+        {/* الدفع */}
+        {paypalLive && (
+          <div className="mt-6 rounded-2xl border border-white/10 bg-neutral-900/70 p-5">
+            <p className="mb-4 flex items-center gap-2 font-semibold"><LockIcon className="h-4 w-4 text-brand" />{t("pay.secure")}</p>
+            <PayPalButtons clientId={process.env.PAYPAL_CLIENT_ID!} item={item} />
+            <div className="mt-4 grid grid-cols-3 gap-2 border-t border-white/10 pt-4 text-center text-[11px] text-neutral-400">
+              <span className="flex flex-col items-center gap-1"><LockIcon className="h-4 w-4 text-brand-cyan" />{t("pay.trustSsl")}</span>
+              <span className="flex flex-col items-center gap-1"><ClockIcon className="h-4 w-4 text-brand-cyan" />{t("pay.trustInstant")}</span>
+              <span className="flex flex-col items-center gap-1"><ShieldIcon className="h-4 w-4 text-brand-cyan" />{t("pay.trustPrivate")}</span>
+            </div>
+          </div>
+        )}
 
       {methods.length > 0 && (
       <div className="mt-8">
@@ -63,6 +107,7 @@ export default async function Pay({ searchParams }: { searchParams: { item?: str
           </a>
         )}
       </p>
+      </div>
     </div>
   );
 }

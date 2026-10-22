@@ -18,7 +18,7 @@ export default function PayPalButtons({ clientId, item }: { clientId: string; it
       if (!pp || !box.current || cancelled) return;
       box.current.innerHTML = "";
       pp.Buttons({
-        style: { layout: "vertical", color: "gold", shape: "rect", label: "pay", height: 48 },
+        style: { layout: "vertical", color: "black", shape: "pill", label: "pay", height: 48, tagline: false },
         createOrder: async () => {
           const r = await fetch("/api/paypal/order", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ item }) });
           const d = await r.json();
@@ -64,8 +64,8 @@ export default function PayPalButtons({ clientId, item }: { clientId: string; it
   }
   return (
     <div>
-      {state === "loading" && <div className="h-28 animate-pulse rounded-xl bg-white/5" />}
-      <div ref={box} className="rounded-xl bg-white p-3 empty:hidden" />
+      {state === "loading" && <div className="h-28 animate-pulse rounded-2xl bg-white/5" />}
+      <div ref={box} className="rounded-2xl bg-white p-4 empty:hidden" style={{ colorScheme: "light" }} />
       {state === "error" && <p className="mt-3 text-center text-sm text-red-400">{t("pay.ppError")}</p>}
       <p className="mt-3 text-center text-xs text-neutral-500">{t("pay.ppNote")}</p>
     </div>
