@@ -101,6 +101,10 @@ export default async function TitlePage({ params }: { params: { slug: string } }
                   return (
                     <Link key={e.id} href={`/watch/${t.slug}?ep=${e.id}`} className="flex items-center gap-4 p-4 hover:bg-white/5">
                       <span className="w-8 text-2xl font-bold text-neutral-500">{e.number}</span>
+                      {e.thumbUrl && (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={e.thumbUrl} alt="" className="aspect-video w-28 shrink-0 rounded-md object-cover sm:w-40" />
+                      )}
                       <div className="flex-1">
                         <p className="font-semibold">{e.name}</p>
                         {e.description && <p className="line-clamp-2 text-sm text-neutral-400">{e.description}</p>}

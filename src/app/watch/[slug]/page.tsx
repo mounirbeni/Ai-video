@@ -55,7 +55,7 @@ export default async function Watch({ params, searchParams }: { params: { slug: 
     <div className="mx-auto max-w-6xl px-4 py-6">
       <Player
         src={ep ? `/api/stream/episode/${ep.id}` : `/api/stream/title/${t.id}`}
-        poster={t.backdropUrl || t.posterUrl || undefined}
+        poster={ep?.thumbUrl || t.backdropUrl || t.posterUrl || undefined}
         progressKey={user ? key : undefined}
         watermark={user ? `${user.email} · ${user.id.slice(-6)}` : undefined}
         startAt={progress?.seconds ?? 0}

@@ -103,6 +103,7 @@ model Episode {
   nameAr        String?
   descriptionAr String?
   videoSrc      String
+  thumbUrl      String? // صورة الحلقة (16:9)
   duration      Int?
   isFree        Boolean @default(false)
 
