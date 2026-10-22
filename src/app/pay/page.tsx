@@ -4,6 +4,8 @@ import { requireUser } from "@/lib/auth";
 import { getMethods, getWhatsapp, isItem, ITEMS, waLink } from "@/lib/manual";
 import { submitPayment } from "@/app/actions/payments";
 import PayForm from "@/components/PayForm";
+import PayPalButtons from "@/components/PayPalButtons";
+import { paypalLive } from "@/lib/paypal";
 import { getT } from "@/lib/i18n/server";
 
 export const dynamic = "force-dynamic";
@@ -14,7 +16,7 @@ export default async function Pay({ searchParams }: { searchParams: { item?: str
   if (!isItem(item)) redirect("/pricing");
   const t = getT();
   const methods = await getMethods(t.locale);
-  if (!methods.length) redirect("/pricing");
+  if (!methods.length && !paypalLive) redirect("/pricing");
   const it = ITEMS[item];
   const whatsapp = await getWhatsapp();
 
@@ -26,7 +28,15 @@ export default async function Pay({ searchParams }: { searchParams: { item?: str
         <p className="mt-1 text-brand-cyan">{t("pay.mad", { mad: it.mad })}</p>
       </div>
 
+      {paypalLive && (
+        <div className="mt-8">
+          <PayPalButtons clientId={process.env.PAYPAL_CLIENT_ID!} item={item} />
+        </div>
+      )}
+
+      {methods.length > 0 && (
       <div className="mt-8">
+        {paypalLive && <p className="mb-4 text-center text-sm text-neutral-500">{t("pay.orManual")}</p>}
         <PayForm
           action={submitPayment}
           item={item}
@@ -38,6 +48,7 @@ export default async function Pay({ searchParams }: { searchParams: { item?: str
           returned={searchParams.via === "paypal"}
         />
       </div>
+      )}
 
       <p className="mt-8 flex flex-wrap justify-center gap-x-4 gap-y-2 text-sm text-neutral-400">
         <Link href="/redeem" className="hover:text-white">{t("pay.haveCode")}</Link>

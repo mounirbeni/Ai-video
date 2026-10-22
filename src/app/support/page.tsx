@@ -3,6 +3,7 @@ import { getUser } from "@/lib/auth";
 import { SUPPORT_TIERS } from "@/lib/plans";
 import { paddleCheckout, paddleEnv, supportPrice } from "@/lib/paddle";
 import { getMethods } from "@/lib/manual";
+import { paypalLive } from "@/lib/paypal";
 import PaddleCheckout from "@/components/PaddleCheckout";
 import { getT } from "@/lib/i18n/server";
 import { CheckIcon } from "@/components/Icons";
@@ -17,7 +18,7 @@ export function generateMetadata() {
 export default async function Support({ searchParams }: { searchParams: { thanks?: string } }) {
   const user = await getUser();
   const t = getT();
-  const manual = !paddleCheckout && (await getMethods()).length > 0;
+  const manual = !paddleCheckout && (paypalLive || (await getMethods()).length > 0);
 
   return (
     <div className="relative overflow-hidden">

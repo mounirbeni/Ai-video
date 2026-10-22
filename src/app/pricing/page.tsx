@@ -4,6 +4,7 @@ import { PLANS } from "@/lib/plans";
 import { demoPayments, stripe } from "@/lib/stripe";
 import { paddleCheckout, paddleEnv, paddlePrice } from "@/lib/paddle";
 import { getMethods } from "@/lib/manual";
+import { paypalLive } from "@/lib/paypal";
 import PaddleCheckout from "@/components/PaddleCheckout";
 import { getT } from "@/lib/i18n/server";
 import { CheckIcon } from "@/components/Icons";
@@ -16,7 +17,7 @@ export default async function Pricing({ searchParams }: { searchParams: { cancel
   const subscribed = isSubscribed(user);
   const t = getT();
   // لا شركة دفع مفعّلة بعد: نعرض «قريبًا» بدل زر يقود إلى خطأ
-  const manual = !paddleCheckout && (await getMethods()).length > 0;
+  const manual = !paddleCheckout && (paypalLive || (await getMethods()).length > 0);
   const payable = demoPayments || !!stripe || paddleCheckout || manual;
   const FEATURES = [t("pricing.f1"), t("pricing.f2"), t("pricing.f3"), t("pricing.f4")];
 
