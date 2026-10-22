@@ -5,6 +5,7 @@ import { paddleCheckout, paddleEnv, supportPrice } from "@/lib/paddle";
 import { getMethods } from "@/lib/manual";
 import { paypalLive } from "@/lib/paypal";
 import PaddleCheckout from "@/components/PaddleCheckout";
+import DonateForm from "@/components/DonateForm";
 import { getT } from "@/lib/i18n/server";
 import { CheckIcon } from "@/components/Icons";
 
@@ -32,6 +33,9 @@ export default async function Support({ searchParams }: { searchParams: { thanks
           <p className="mx-auto mt-6 max-w-xl rounded-md bg-green-500/10 p-3 text-center text-sm text-green-300">{t("support.thanks")}</p>
         )}
 
+        {paypalLive ? (
+          <DonateForm signedIn={!!user} />
+        ) : (
         <div className="mt-10 grid gap-5 md:grid-cols-3">
           {Object.values(SUPPORT_TIERS).map((tier) => {
             const featured = tier.id === "supporter";
@@ -83,7 +87,8 @@ export default async function Support({ searchParams }: { searchParams: { thanks
             );
           })}
         </div>
-        <p className="mt-8 text-center text-xs text-neutral-500">{t("support.note")}</p>
+        )}
+        {!paypalLive && <p className="mt-8 text-center text-xs text-neutral-500">{t("support.note")}</p>}
         <p className="mt-6 text-center text-sm text-neutral-400">
           <Link href="/redeem" className="text-brand hover:underline">{t("pay.haveCode")}</Link>
         </p>

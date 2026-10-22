@@ -225,7 +225,7 @@ export default async function Account({ searchParams }: { searchParams: { succes
             {payments.map((p) => (
               <div key={p.id} className="flex flex-wrap items-center justify-between gap-2 py-2.5">
                 <div>
-                  <p>{isItem(p.item) ? `${t(ITEMS[p.item].nameKey)} · ${ITEMS[p.item].usd}` : p.item}</p>
+                  <p>{isItem(p.item) ? `${t(ITEMS[p.item].nameKey)} · ${ITEMS[p.item].usd}` : p.item === "donation" ? t("support.donation") : p.item}</p>
                   <p className="text-xs text-neutral-500">{p.method} · {p.createdAt.toLocaleDateString(t.locale)}</p>
                 </div>
                 <span className={`rounded-full px-2.5 py-0.5 text-xs ${p.status === "approved" ? "bg-green-500/10 text-green-400" : p.status === "rejected" ? "bg-red-500/10 text-red-400" : "bg-amber-500/10 text-amber-300"}`}>

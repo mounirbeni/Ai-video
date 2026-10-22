@@ -6,7 +6,7 @@ import { CheckCircleIcon } from "./Icons";
 
 type PayPalSDK = { Buttons: (o: Record<string, unknown>) => { render: (el: HTMLElement) => Promise<void>; close?: () => void } };
 
-export default function PayPalButtons({ clientId, item }: { clientId: string; item: string }) {
+export default function PayPalButtons({ clientId, item, amount }: { clientId: string; item: string; amount?: string }) {
   const t = useT();
   const box = useRef<HTMLDivElement>(null);
   const [state, setState] = useState<"loading" | "ready" | "done" | "error">("loading");
@@ -20,7 +20,7 @@ export default function PayPalButtons({ clientId, item }: { clientId: string; it
       pp.Buttons({
         style: { layout: "vertical", color: "black", shape: "pill", label: "pay", height: 48, tagline: false },
         createOrder: async () => {
-          const r = await fetch("/api/paypal/order", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ item }) });
+          const r = await fetch("/api/paypal/order", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ item, amount }) });
           const d = await r.json();
           if (!d.id) throw new Error("order");
           return d.id;
@@ -52,7 +52,7 @@ export default function PayPalButtons({ clientId, item }: { clientId: string; it
       document.body.appendChild(s);
     }
     return () => { cancelled = true; };
-  }, [clientId, item]);
+  }, [clientId, item, amount]);
 
   if (state === "done") {
     return (

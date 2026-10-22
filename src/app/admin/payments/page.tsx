@@ -23,7 +23,7 @@ export default async function Payments() {
     methodsText("ar"),
     getWhatsapp(),
   ]);
-  const name = (item: string) => (isItem(item) ? `${t(ITEMS[item].nameKey)} · ${ITEMS[item].usd}` : item);
+  const name = (item: string) => (isItem(item) ? `${t(ITEMS[item].nameKey)} · ${ITEMS[item].usd}` : item === "donation" ? t("support.donation") : item);
 
   return (
     <div className="space-y-12">

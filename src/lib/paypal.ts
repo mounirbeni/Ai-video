@@ -28,13 +28,23 @@ async function call(path: string, method: "GET" | "POST", body?: unknown) {
   return { ok: res.ok, data: await res.json().catch(() => ({})) };
 }
 
-export async function createOrder(userId: string, item: ItemId, name: string) {
+// تبرع حر: من 1 إلى 1000 دولار، يُحفظ بالسنتات
+export const DONATION_MIN = 1;
+export const DONATION_MAX = 1000;
+export function donationCents(v: unknown) {
+  const n = Math.round(Number(String(v ?? "").replace(",", ".")) * 100);
+  return Number.isFinite(n) && n >= DONATION_MIN * 100 && n <= DONATION_MAX * 100 ? n : 0;
+}
+export const centsToUsd = (c: number) => (c / 100).toFixed(2);
+
+// ref: معرّف المنتج أو donation-<سنتات>
+export async function createOrder(userId: string, ref: string, value: string, name: string) {
   const { ok, data } = await call("/v2/checkout/orders", "POST", {
     intent: "CAPTURE",
     purchase_units: [{
-      custom_id: `${userId}:${item}`,
+      custom_id: `${userId}:${ref}`,
       description: `Nexora — ${name}`.slice(0, 127),
-      amount: { currency_code: "USD", value: usdValue(item) },
+      amount: { currency_code: "USD", value },
     }],
     application_context: { brand_name: "Nexora", shipping_preference: "NO_SHIPPING", user_action: "PAY_NOW" },
   });
