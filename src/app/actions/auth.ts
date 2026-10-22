@@ -3,6 +3,7 @@
 import bcrypt from "bcryptjs";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { createSession, destroySession, getUser } from "@/lib/auth";
 import { issueToken, consumeToken } from "@/lib/tokens";
@@ -83,6 +84,29 @@ export async function chooseUsername(_: FormState, form: FormData): Promise<Form
     .catch(() => null);
   if (!done) return { error: t("err.usernameTaken") };
   redirect(next);
+}
+
+export async function updateName(_: FormState, form: FormData): Promise<FormState> {
+  const user = await getUser();
+  if (!user) redirect("/login");
+  const name = String(form.get("name") || "").trim().slice(0, 60);
+  const t = getT();
+  if (!name) return { error: t("err.nameEmail") };
+  await db.user.update({ where: { id: user.id }, data: { name } });
+  revalidatePath("/account");
+  return { ok: t("account.nameSaved") };
+}
+
+export async function changePassword(_: FormState, form: FormData): Promise<FormState> {
+  const user = await getUser();
+  if (!user) redirect("/login");
+  const t = getT();
+  const current = String(form.get("current") || "");
+  const next = String(form.get("password") || "");
+  if (!(await bcrypt.compare(current, user.passwordHash))) return { error: t("account.wrongPassword") };
+  if (next.length < 8) return { error: t("err.passwordLength") };
+  await db.user.update({ where: { id: user.id }, data: { passwordHash: await bcrypt.hash(next, 10) } });
+  return { ok: t("account.passwordSaved") };
 }
 
 export async function logout() {
