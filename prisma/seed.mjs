@@ -18,3 +18,6 @@ await prisma.user.upsert({
 });
 console.log(`تم تجهيز حساب المدير: ${email}`);
 await prisma.$disconnect();
+
+// رفع ملفات media-upload/ إلى التخزين الخاص (يعمل أثناء البناء على Vercel)
+await import("../scripts/upload-media.mjs");
