@@ -2,6 +2,7 @@ import { db } from "@/lib/db";
 import { ITEMS, isItem, methodsText, getWhatsapp } from "@/lib/manual";
 import { decidePayment, generateCodes, saveMethods } from "@/app/actions/payments";
 import { getT } from "@/lib/i18n/server";
+import { CopyIconButton } from "@/components/PayShortcuts";
 
 export const dynamic = "force-dynamic";
 
@@ -82,9 +83,10 @@ export default async function Payments() {
             <h3 className="mb-2 text-sm text-neutral-400">{t("admin.unused")} ({codes.length})</h3>
             <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
               {codes.map((c) => (
-                <div key={c.code} className="flex items-center justify-between rounded-lg border border-white/10 bg-neutral-900/70 px-3 py-2 text-sm">
-                  <code className="select-all font-mono tracking-wider" dir="ltr">{c.code}</code>
+                <div key={c.code} className="flex items-center gap-2 rounded-lg border border-white/10 bg-neutral-900/70 px-3 py-2 text-sm">
+                  <code className="flex-1 select-all font-mono tracking-wider" dir="ltr">{c.code}</code>
                   <span className="text-xs text-neutral-400">{isItem(c.item) ? t(ITEMS[c.item].nameKey) : c.item}</span>
+                  <CopyIconButton value={c.code} />
                 </div>
               ))}
             </div>

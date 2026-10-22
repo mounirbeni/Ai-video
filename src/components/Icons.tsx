@@ -40,5 +40,6 @@ export const GlobeIcon = (p: P) => <Svg {...p}><circle cx="12" cy="12" r="9" /><
 export const DocIcon = (p: P) => <Svg {...p}><path d="M6 3h8l4 4v14H6z" /><path d="M14 3v4h4M9 12h6M9 16h6" /></Svg>;
 export const LogoutIcon = (p: P) => <Svg {...p}><path d="M15 4h4v16h-4M10 8l-4 4 4 4M6 12h10" /></Svg>;
 export const ShieldIcon = (p: P) => <Svg {...p}><path d="M12 3l8 3v6c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V6z" /><path d="M8.5 12l2.5 2.5 4.5-5" /></Svg>;
+export const CopyIcon = (p: P) => <Svg {...p}><rect x="9" y="9" width="11" height="11" rx="2" /><path d="M5 15V5a1 1 0 0 1 1-1h10" /></Svg>;
 // يتجه تلقائيًا حسب اتجاه الصفحة (يمين في RTL)
 export const ArrowNextIcon = ({ className = "h-4 w-4" }: P) => <Svg className={`${className} rtl:-scale-x-100`}><path d="M5 12h14M13 6l6 6-6 6" /></Svg>;
