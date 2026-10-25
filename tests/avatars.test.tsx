@@ -32,6 +32,29 @@ it("shows saved choices and localized Arabic controls", () => {
   expect(screen.getByRole("button", { name: "حفظ الصورة" })).toBeTruthy();
 });
 
+it("offers the special guardian only to admins and previews its separate artwork", () => {
+  const { rerender } = render(<AvatarPicker currentAvatarId={null} name="Admin" role="ADMIN" />);
+  expect(screen.getAllByRole("radio")).toHaveLength(12);
+  fireEvent.click(screen.getByRole("radio", { name: "Sovereign · Admin" }));
+  expect(screen.getByRole("img", { name: "Sovereign · Admin" }).style.backgroundImage).toContain("admin-sovereign.webp");
+  rerender(<AvatarPicker currentAvatarId={null} name="Viewer" />);
+  expect(screen.queryByRole("radio", { name: "Sovereign · Admin" })).toBeNull();
+  expect(screen.getAllByRole("radio")).toHaveLength(11);
+});
+
+it("renders a saved admin portrait only while the account has the admin role", () => {
+  const { rerender } = render(<UserAvatar avatarId="sovereign" role="ADMIN" name="Admin" />);
+  expect(screen.getByRole("img").style.backgroundImage).toContain("admin-sovereign.webp");
+  rerender(<UserAvatar avatarId="sovereign" role="USER" name="Viewer" />);
+  expect(screen.getByRole("img").style.backgroundImage).toBe("");
+  expect(screen.getByRole("img").textContent).toBe("V");
+});
+
+it("localizes the admin choice in Arabic", () => {
+  render(<I18nProvider locale="ar"><AvatarPicker currentAvatarId="sovereign" role="ADMIN" name="مشرف" /></I18nProvider>);
+  expect((screen.getByRole("radio", { name: "سوفرين · المشرف" }) as HTMLInputElement).checked).toBe(true);
+});
+
 it("falls back to initials for a missing or invalid preset instead of loading a user-provided URL", () => {
   expect(getAvatar("https://example.com/avatar.png")).toBeUndefined();
   render(<UserAvatar avatarId="https://example.com/avatar.png" name="Nexora" />);

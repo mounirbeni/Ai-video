@@ -95,7 +95,7 @@ export default async function Account({ searchParams: searchParamsPromise }: { s
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(30rem_10rem_at_0%_0%,rgba(124,92,255,.22),transparent)]" />
         <div className="relative flex items-center gap-4">
           <a href="#avatar-settings" className="rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand" aria-label={t("avatar.choose")}>
-            <UserAvatar avatarId={user.avatarId} name={user.username || user.name} decorative className="h-16 w-16 text-2xl shadow-[0_0_24px_-6px_rgba(124,92,255,.5)]" />
+            <UserAvatar role={user.role} avatarId={user.avatarId} name={user.username || user.name} decorative className="h-16 w-16 text-2xl shadow-[0_0_24px_-6px_rgba(124,92,255,.5)]" />
           </a>
           <div className="min-w-0">
             <Link href="/my-list" className="btn-ghost mb-4">{t("list.title")}</Link>
@@ -126,7 +126,7 @@ export default async function Account({ searchParams: searchParamsPromise }: { s
         </div>
       </section>
 
-      <section id="avatar-settings" className="card mt-6 scroll-mt-24"><AvatarPicker currentAvatarId={user.avatarId} name={user.username || user.name} /></section>
+      <section id="avatar-settings" className="card mt-6 scroll-mt-24"><AvatarPicker role={user.role} currentAvatarId={user.avatarId} name={user.username || user.name} /></section>
 
       {/* إحصاءات */}
       <div className="mt-6 grid grid-cols-3 gap-3">

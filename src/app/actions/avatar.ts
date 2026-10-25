@@ -12,7 +12,7 @@ export async function updateAvatar(_: AvatarState, form: FormData): Promise<Avat
   const user = await requireUser("/account#avatar-settings");
   const t = await getT();
   const choice = form.get("avatarId");
-  if (choice !== "initials" && !isAvatarId(choice)) return { error: t("avatar.invalid") };
+  if (choice !== "initials" && !isAvatarId(choice, user.role)) return { error: t("avatar.invalid") };
   const avatarId = choice === "initials" ? null : choice;
   try {
     await db.user.update({ where: { id: user.id }, data: { avatarId } });
