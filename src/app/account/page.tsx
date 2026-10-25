@@ -11,6 +11,8 @@ import { ITEMS, isItem, getWhatsapp, waLink } from "@/lib/manual";
 import { accessKind, streamLimit } from "@/lib/access";
 import PlanBadge from "@/components/PlanBadge";
 import { contactEmail } from "@/lib/contact";
+import AvatarPicker from "@/components/AvatarPicker";
+import UserAvatar from "@/components/UserAvatar";
 import SimpleForm from "@/components/SimpleForm";
 import {
   ArrowNextIcon, CardIcon, ChatIcon, DocIcon, FilmIcon, GiftIcon, GlobeIcon, HeartIcon, KeyIcon, LogoutIcon,
@@ -70,7 +72,6 @@ export default async function Account({ searchParams: searchParamsPromise }: { s
   const end = ends.length ? new Date(Math.max(...ends.map((d) => d.getTime()))) : null;
   const daysLeft = end ? Math.ceil((end.getTime() - Date.now()) / DAY) : 0;
   const pct = Math.min(100, Math.round((daysLeft / (daysLeft > 31 ? 365 : 30)) * 100));
-  const initial = (user.username || user.name || "?").trim().charAt(0).toUpperCase();
   const other = t.locale === "ar" ? "en" : "ar";
 
   return (
@@ -93,14 +94,15 @@ export default async function Account({ searchParams: searchParamsPromise }: { s
       <section className="card relative overflow-hidden">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(30rem_10rem_at_0%_0%,rgba(124,92,255,.22),transparent)]" />
         <div className="relative flex items-center gap-4">
-          <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-brand-violet via-brand-blue to-brand-cyan text-2xl font-extrabold text-white shadow-[0_0_24px_-6px_rgba(124,92,255,.8)]">
-            {initial}
-          </div>
+          <a href="#avatar-settings" className="rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand" aria-label={t("avatar.choose")}>
+            <UserAvatar avatarId={user.avatarId} name={user.username || user.name} decorative className="h-16 w-16 text-2xl shadow-[0_0_24px_-6px_rgba(124,92,255,.5)]" />
+          </a>
           <div className="min-w-0">
             <Link href="/my-list" className="btn-ghost mb-4">{t("list.title")}</Link>
-      <h1 className="truncate text-2xl font-bold">{user.name}</h1>
+            <h1 className="truncate text-2xl font-bold">{user.name}</h1>
             {user.username && <p className="text-sm text-brand" dir="auto">@{user.username}</p>}
             <p className="truncate text-sm text-neutral-400" dir="ltr">{user.email}</p>
+            <a href="#avatar-settings" className="mt-2 inline-block rounded text-xs font-semibold text-brand-cyan hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand">{t("avatar.change")}</a>
           </div>
         </div>
         <div className="relative mt-4 flex flex-wrap gap-2 text-xs">
@@ -123,6 +125,8 @@ export default async function Account({ searchParams: searchParamsPromise }: { s
           )}
         </div>
       </section>
+
+      <section id="avatar-settings" className="card mt-6 scroll-mt-24"><AvatarPicker currentAvatarId={user.avatarId} name={user.username || user.name} /></section>
 
       {/* إحصاءات */}
       <div className="mt-6 grid grid-cols-3 gap-3">

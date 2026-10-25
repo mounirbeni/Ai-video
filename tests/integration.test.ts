@@ -21,6 +21,8 @@ import { consumeLimit } from "../src/lib/rate-limit";
 import { POST as capture } from "../src/app/api/paypal/capture/route";
 import { POST as progress } from "../src/app/api/progress/route";
 import { redeemCode, decidePayment } from "../src/app/actions/payments";
+import { updateAvatar } from "../src/app/actions/avatar";
+import { AVATARS } from "../src/lib/avatars";
 import { setWatchlist } from "../src/app/actions/library";
 import bcrypt from "bcryptjs";
 
@@ -84,6 +86,30 @@ describe.skipIf(!enabled)("Postgres account, payment and library flows", () => {
     const user = await db.user.findUniqueOrThrow({ where: { id: state.userId } });
     expect(user.sessionVersion).toBe(0);
     expect(await bcrypt.compare("old-password", user.passwordHash)).toBe(true);
+  });
+
+  it("saves each of the ten preset avatars for the current user and can restore initials", async () => {
+    const other = await db.user.create({ data: { name: "Other", email: "other@nexora.test", passwordHash: "unused", avatarId: "nova" } });
+    for (const avatar of AVATARS) {
+      const form = new FormData(); form.set("avatarId", avatar.id); form.set("userId", other.id);
+      expect(await updateAvatar(undefined, form)).toHaveProperty("ok");
+      expect((await db.user.findUniqueOrThrow({ where: { id: state.userId } })).avatarId).toBe(avatar.id);
+      expect((await db.user.findUniqueOrThrow({ where: { id: other.id } })).avatarId).toBe("nova");
+    }
+    const reset = new FormData(); reset.set("avatarId", "initials");
+    expect(await updateAvatar(undefined, reset)).toHaveProperty("ok");
+    expect((await db.user.findUniqueOrThrow({ where: { id: state.userId } })).avatarId).toBeNull();
+  });
+
+  it("rejects arbitrary avatar identifiers and unauthenticated avatar changes", async () => {
+    for (const value of ["https://example.com/avatar.png", "unknown", "", "__proto__"]) {
+      const form = new FormData(); form.set("avatarId", value);
+      expect(await updateAvatar(undefined, form)).toHaveProperty("error");
+    }
+    expect((await db.user.findUniqueOrThrow({ where: { id: state.userId } })).avatarId).toBeNull();
+    state.cookies.clear();
+    const form = new FormData(); form.set("avatarId", "ember");
+    await expect(updateAvatar(undefined, form)).rejects.toThrow("REDIRECT:/login");
   });
 
   const captureRequest = () => new Request("http://localhost/api/paypal/capture", { method: "POST", body: JSON.stringify({ orderID: "ORDER123456" }), headers: { "Content-Type": "application/json" } });

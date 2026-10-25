@@ -50,10 +50,13 @@ describe.skipIf(!enabled)("production additive SQL", () => {
   it("preserves existing rows and saved lists when production preparation is repeated", async () => {
     const { db, url } = await fixture();
     expect(prepare(url).status).toBe(0);
+    expect(await db.$queryRawUnsafe('SELECT "avatarId" FROM "User"')).toEqual([{ avatarId: null }]);
+    await db.$executeRawUnsafe(`UPDATE "User" SET "avatarId" = 'ember' WHERE "id" = 'viewer'`);
     await db.$executeRawUnsafe(`INSERT INTO "Watchlist" ("userId", "titleId") VALUES ('viewer', 'movie')`);
     expect(prepare(url).status).toBe(0);
     const users = await db.$queryRawUnsafe<{ email: string; sessionVersion: number }[]>('SELECT "email", "sessionVersion" FROM "User"');
     expect(users).toEqual([{ email: "kept@example.test", sessionVersion: 0 }]);
+    expect(await db.$queryRawUnsafe('SELECT "avatarId" FROM "User"')).toEqual([{ avatarId: "ember" }]);
     expect(await db.$queryRawUnsafe('SELECT "name", "streamFormat", "subtitles" FROM "Title"')).toEqual([{ name: "Existing movie", streamFormat: "file", subtitles: [] }]);
     expect(await db.$queryRawUnsafe('SELECT "seconds", "completed" FROM "WatchProgress"')).toEqual([{ seconds: 120, completed: false }]);
     expect(await db.$queryRawUnsafe('SELECT "userId", "titleId" FROM "Watchlist"')).toEqual([{ userId: "viewer", titleId: "movie" }]);
