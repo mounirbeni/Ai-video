@@ -16,3 +16,11 @@ input, textarea, select { font-size: 16px; }
 .card { @apply rounded-xl border border-white/10 bg-neutral-900/70 p-6; }
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { scrollbar-width: none; }
+
+.rail-arrow { @apply flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-white/5 text-white transition hover:border-white/40 hover:bg-white/10 disabled:cursor-default disabled:opacity-25 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand; }
+.home-pill { @apply inline-flex shrink-0 items-center gap-2 rounded-full border border-white/10 bg-white/[.025] px-4 py-2.5 text-sm font-semibold text-neutral-300 transition hover:border-brand/50 hover:bg-brand/10 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand; }
+.home-hero-shade { background: linear-gradient(90deg, rgba(3,4,12,.97) 0%, rgba(3,4,12,.82) 35%, rgba(3,4,12,.13) 100%); }
+[dir="rtl"] .home-hero-shade { background: linear-gradient(270deg, rgba(3,4,12,.97) 0%, rgba(3,4,12,.82) 35%, rgba(3,4,12,.13) 100%); }
+@media (max-width: 639px) {
+  .home-hero-shade, [dir="rtl"] .home-hero-shade { background: linear-gradient(0deg, #03040c 0%, rgba(3,4,12,.9) 25%, rgba(3,4,12,.25) 75%, rgba(3,4,12,.1) 100%); }
+}
