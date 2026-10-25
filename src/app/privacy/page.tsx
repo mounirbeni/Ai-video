@@ -4,8 +4,8 @@ import { contactEmail } from "@/lib/contact";
 
 const email = contactEmail();
 
-export function generateMetadata() {
-  return { title: getLocale() === "ar" ? "سياسة الخصوصية — Nexora" : "Privacy Policy — Nexora" };
+export async function generateMetadata() {
+  return { title: (await getLocale()) === "ar" ? "سياسة الخصوصية — Nexora" : "Privacy Policy — Nexora" };
 }
 
 // نموذج عام — راجعه مع مختص قانوني وعدّله بحسب بلدك ونشاطك
@@ -31,7 +31,7 @@ const EN: [string, string][] = [
         ["8. Changes", "We may update this policy and will publish the updated version here with its revision date."],
       ];
 
-export default function Privacy() {
-  const ar = getLocale() === "ar";
+export default async function Privacy() {
+  const ar = (await getLocale()) === "ar";
   return <LegalPage title={ar ? "سياسة الخصوصية" : "Privacy Policy"} updated="2026-10-19" sections={ar ? AR : EN} />;
 }

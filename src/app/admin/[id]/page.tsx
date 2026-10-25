@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
+import SubtitleFields from "@/components/SubtitleFields";
 import TitleForm from "@/components/TitleForm";
 import UploadField from "@/components/UploadField";
 import { addEpisode, deleteEpisode, deleteTitle, updateTitle } from "@/app/actions/admin";
@@ -7,14 +8,17 @@ import { getT } from "@/lib/i18n/server";
 
 export const dynamic = "force-dynamic";
 
-export default async function EditTitle({ params, searchParams }: { params: { id: string }; searchParams: { saved?: string } }) {
+export default async function EditTitle({ params: paramsPromise, searchParams: searchParamsPromise }: { params: Promise<{ id: string }>; searchParams: Promise<{ saved?: string }> }) {
+  const params = await paramsPromise;
+  const searchParams = await searchParamsPromise;
+
   const t = await db.title.findUnique({
     where: { id: params.id },
     include: { episodes: { orderBy: [{ season: "asc" }, { number: "asc" }] } },
   });
   if (!t) notFound();
   const lastSeason = t.episodes.at(-1)?.season ?? 1;
-  const tr = getT();
+  const tr = (await getT());
 
   return (
     <div className="space-y-10">
@@ -52,6 +56,7 @@ export default async function EditTitle({ params, searchParams }: { params: { id
             <div className="md:col-span-2"><label className="label">{tr("admin.description")} (العربية)</label><textarea name="descriptionAr" className="input" dir="rtl" /></div>
             <div className="md:col-span-3"><UploadField name="videoSrc" label={tr("admin.epFile")} kind="video" required /></div>
             <div><label className="label">{tr("admin.duration")}</label><input name="duration" type="number" className="input" /></div>
+            <div className="md:col-span-4"><SubtitleFields /></div>
             <label className="flex items-center gap-2 md:col-span-4"><input type="checkbox" name="isFree" /> {tr("admin.epFreeLabel")}</label>
             <div className="md:col-span-4"><button className="btn-primary">{tr("admin.addEpisodeBtn")}</button></div>
           </form>

@@ -15,7 +15,7 @@ Nom: Nom Prénom
 Téléphone: 06 00 00 00 00`;
 
 export default async function Payments() {
-  const t = getT();
+  const t = (await getT());
   const [pending, recent, codes, methods, methodsAr, whatsapp] = await Promise.all([
     db.paymentRequest.findMany({ where: { status: "pending" }, orderBy: { createdAt: "asc" }, include: { user: true } }),
     db.paymentRequest.findMany({ where: { status: { not: "pending" } }, orderBy: { decidedAt: "desc" }, take: 20, include: { user: true } }),

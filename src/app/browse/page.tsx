@@ -5,7 +5,9 @@ import { localizeTitle } from "@/lib/i18n/localize";
 
 export const dynamic = "force-dynamic";
 
-export default async function Browse({ searchParams }: { searchParams: { type?: string; q?: string } }) {
+export default async function Browse({ searchParams: searchParamsPromise }: { searchParams: Promise<{ type?: string; q?: string }> }) {
+  const searchParams = await searchParamsPromise;
+
   const type = searchParams.type === "MOVIE" || searchParams.type === "SERIES" ? searchParams.type : undefined;
   const q = searchParams.q?.trim();
   const items = await db.title.findMany({
@@ -16,7 +18,7 @@ export default async function Browse({ searchParams }: { searchParams: { type?: 
     },
     orderBy: { createdAt: "desc" },
   });
-  const t = getT();
+  const t = (await getT());
   const heading = q ? t("browse.results", { q }) : type === "MOVIE" ? t("row.movies") : type === "SERIES" ? t("row.series") : t("browse.all");
 
   return (

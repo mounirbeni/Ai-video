@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { parseSubtitles } from "@/lib/subtitles";
 import { db } from "@/lib/db";
 import { requireAdmin } from "@/lib/auth";
 import { slugify } from "@/lib/utils";
@@ -27,6 +28,8 @@ function titleData(f: FormData, type: string) {
     backdropUrl: opt(f, "backdropUrl"),
     trailerUrl: opt(f, "trailerUrl"),
     videoSrc: opt(f, "videoSrc"),
+    subtitles: parseSubtitles(str(f, "subtitles")),
+    streamFormat: str(f, "streamFormat") === "hls" ? "hls" : "file",
     duration: series ? null : int(f, "duration"),
     plannedEpisodes: series ? int(f, "plannedEpisodes") : null,
     isFree: bool(f, "isFree"),
@@ -67,8 +70,8 @@ export async function addEpisode(titleId: string, f: FormData) {
   const number = int(f, "number") ?? (await db.episode.count({ where: { titleId, season } })) + 1;
   await db.episode.upsert({
     where: { titleId_season_number: { titleId, season, number } },
-    update: { name: str(f, "name"), description: str(f, "description"), nameAr: opt(f, "nameAr"), descriptionAr: opt(f, "descriptionAr"), videoSrc: str(f, "videoSrc"), duration: int(f, "duration"), isFree: bool(f, "isFree") },
-    create: { titleId, season, number, name: str(f, "name"), description: str(f, "description"), nameAr: opt(f, "nameAr"), descriptionAr: opt(f, "descriptionAr"), videoSrc: str(f, "videoSrc"), duration: int(f, "duration"), isFree: bool(f, "isFree") },
+    update: { name: str(f, "name"), description: str(f, "description"), nameAr: opt(f, "nameAr"), descriptionAr: opt(f, "descriptionAr"), videoSrc: str(f, "videoSrc"), subtitles: parseSubtitles(str(f, "subtitles")), streamFormat: str(f, "streamFormat") === "hls" ? "hls" : "file", duration: int(f, "duration"), isFree: bool(f, "isFree") },
+    create: { titleId, season, number, name: str(f, "name"), description: str(f, "description"), nameAr: opt(f, "nameAr"), descriptionAr: opt(f, "descriptionAr"), videoSrc: str(f, "videoSrc"), subtitles: parseSubtitles(str(f, "subtitles")), streamFormat: str(f, "streamFormat") === "hls" ? "hls" : "file", duration: int(f, "duration"), isFree: bool(f, "isFree") },
   });
   revalidatePath(`/admin/${titleId}`);
 }

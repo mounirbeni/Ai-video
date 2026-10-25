@@ -3,8 +3,8 @@ import Link from "next/link";
 import { getT } from "@/lib/i18n/server";
 import LangSwitch from "./LangSwitch";
 
-export default function Footer() {
-  const t = getT();
+export default async function Footer() {
+  const t = (await getT());
   const links = [
     { href: "/browse?type=MOVIE", label: t("nav.movies") },
     { href: "/browse?type=SERIES", label: t("nav.series") },

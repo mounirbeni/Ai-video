@@ -1,3 +1,4 @@
+import type { Prisma } from "@prisma/client";
 import crypto from "node:crypto";
 import { db } from "./db";
 
@@ -14,9 +15,9 @@ export async function issueToken(userId: string, type: "VERIFY" | "RESET", hours
 }
 
 // يستهلك الرمز (استخدام لمرة واحدة) ويعيد معرّف المستخدم إن كان صالحًا
-export async function consumeToken(token: string, type: "VERIFY" | "RESET") {
-  const row = await db.authToken.findUnique({ where: { tokenHash: sha(token) } });
+export async function consumeToken(token: string, type: "VERIFY" | "RESET", q: Prisma.TransactionClient = db) {
+  const row = await q.authToken.findUnique({ where: { tokenHash: sha(token) } });
   if (!row || row.type !== type) return null;
-  await db.authToken.delete({ where: { id: row.id } });
-  return row.expiresAt > new Date() ? row.userId : null;
+  const claimed = await q.authToken.deleteMany({ where: { id: row.id, expiresAt: { gt: new Date() } } });
+  return claimed.count === 1 ? row.userId : null;
 }

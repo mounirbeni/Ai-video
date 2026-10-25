@@ -1,6 +1,7 @@
 "use client";
 
-import { useFormState, useFormStatus } from "react-dom";
+import { useActionState } from "react";
+import { useFormStatus } from "react-dom";
 import type { FormState } from "@/app/actions/auth";
 
 function Submit({ label }: { label: string }) {
@@ -11,7 +12,7 @@ function Submit({ label }: { label: string }) {
 export default function SimpleForm({
   action, label, children,
 }: { action: (s: FormState, f: FormData) => Promise<FormState>; label: string; children: React.ReactNode }) {
-  const [state, formAction] = useFormState(action, undefined);
+  const [state, formAction] = useActionState(action, undefined);
   return (
     <form action={formAction} className="space-y-4">
       {children}

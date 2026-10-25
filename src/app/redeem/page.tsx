@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 
 export default async function Redeem() {
   await requireUser("/redeem");
-  const t = getT();
+  const t = (await getT());
   return (
     <div className="mx-auto max-w-md px-4 py-16">
       <div className="card">

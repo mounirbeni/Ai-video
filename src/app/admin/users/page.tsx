@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 
 export default async function Users() {
   const users = await db.user.findMany({ orderBy: { createdAt: "desc" }, take: 200 });
-  const t = getT();
+  const t = (await getT());
   return (
     <div>
       <h1 className="mb-6 text-2xl font-bold">{t("admin.usersTitle")}</h1>

@@ -12,10 +12,12 @@ import { CheckIcon } from "@/components/Icons";
 export const dynamic = "force-dynamic";
 
 
-export default async function Pricing({ searchParams }: { searchParams: { canceled?: string; unavailable?: string } }) {
+export default async function Pricing({ searchParams: searchParamsPromise }: { searchParams: Promise<{ canceled?: string; unavailable?: string }> }) {
+  const searchParams = await searchParamsPromise;
+
   const user = await getUser();
   const subscribed = isSubscribed(user);
-  const t = getT();
+  const t = (await getT());
   // لا شركة دفع مفعّلة بعد: نعرض «قريبًا» بدل زر يقود إلى خطأ
   const manual = !paddleCheckout && (paypalLive || (await getMethods()).length > 0);
   const payable = demoPayments || !!stripe || paddleCheckout || manual;

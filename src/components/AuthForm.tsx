@@ -1,6 +1,7 @@
 "use client";
 
-import { useFormState, useFormStatus } from "react-dom";
+import { useActionState } from "react";
+import { useFormStatus } from "react-dom";
 import type { FormState } from "@/app/actions/auth";
 import { useT } from "@/lib/i18n/client";
 
@@ -12,7 +13,7 @@ function Submit({ label }: { label: string }) {
 export default function AuthForm({
   action, mode, next,
 }: { action: (s: FormState, f: FormData) => Promise<FormState>; mode: "login" | "register"; next?: string }) {
-  const [state, formAction] = useFormState(action, undefined);
+  const [state, formAction] = useActionState(action, undefined);
   const t = useT();
   return (
     <form action={formAction} className="space-y-4">

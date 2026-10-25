@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { put } from "@vercel/blob";
+import { transaction } from "@/lib/transaction";
 import { db } from "@/lib/db";
 import { requireAdmin, requireUser } from "@/lib/auth";
 import { sendMail } from "@/lib/mail";
@@ -16,7 +17,7 @@ const site = () => process.env.APP_URL || "";
 
 export async function submitPayment(_: FormState, f: FormData): Promise<FormState> {
   const user = await requireUser("/pricing");
-  const t = getT();
+  const t = (await getT());
   const item = str(f, "item");
   // الطريقة المختارة قد تكون من النسخة العربية أو الإنجليزية
   const methods = [...(await getMethods("en")), ...(await getMethods("ar"))];
@@ -59,41 +60,45 @@ export async function submitPayment(_: FormState, f: FormData): Promise<FormStat
 
 export async function redeemCode(_: FormState, f: FormData): Promise<FormState> {
   const user = await requireUser("/redeem");
-  const t = getT();
+  const t = (await getT());
   const code = normalizeCode(str(f, "code"));
   if (!code) return { error: t("pay.invalidCode") };
   // الشرط usedById: null داخل التحديث يمنع استخدام الكود مرتين حتى مع طلبين متزامنين
-  const claimed = await db.activationCode.updateMany({
-    where: { code, usedById: null },
-    data: { usedById: user.id, usedAt: new Date() },
+  const redeemed = await transaction(async (q) => {
+    const row = await q.activationCode.findUnique({ where: { code } });
+    if (!row || row.usedById || !isItem(row.item)) return null;
+    const claimed = await q.activationCode.updateMany({ where: { code, usedById: null }, data: { usedById: user.id, usedAt: new Date() } });
+    if (!claimed.count) return null;
+    await grantItem(user.id, row.item, q);
+    return row.item;
   });
-  const row = claimed.count ? await db.activationCode.findUnique({ where: { code } }) : null;
-  if (!row || !isItem(row.item)) return { error: t("pay.invalidCode") };
-  await grantItem(user.id, row.item);
+  if (!redeemed) return { error: t("pay.invalidCode") };
   revalidatePath("/account");
-  return { ok: t("pay.redeemed", { days: ITEMS[row.item].days }) };
+  return { ok: t("pay.redeemed", { days: ITEMS[redeemed].days }) };
 }
 
 export async function decidePayment(id: string, approve: boolean) {
   await requireAdmin();
-  // الانتقال من pending فقط: الضغط مرتين لا يمنح الأيام مرتين
-  const changed = await db.paymentRequest.updateMany({
-    where: { id, status: "pending" },
-    data: { status: approve ? "approved" : "rejected", decidedAt: new Date() },
+  const granted = await transaction(async (q) => {
+    const changed = await q.paymentRequest.updateMany({
+      where: { id, status: "pending" },
+      data: { status: approve ? "approved" : "rejected", decidedAt: new Date() },
+    });
+    if (!changed.count || !approve) return null;
+    const req = await q.paymentRequest.findUniqueOrThrow({ where: { id }, include: { user: true } });
+    if (!isItem(req.item)) throw new Error("Invalid payment item");
+    return { req, until: await grantItem(req.userId, req.item, q) };
   });
-  if (changed.count && approve) {
-    const req = await db.paymentRequest.findUniqueOrThrow({ where: { id }, include: { user: true } });
-    if (isItem(req.item)) {
-      const until = await grantItem(req.userId, req.item);
-      const t = getT();
-      await sendMail(
-        req.user.email,
-        t("mail.paidSubject"),
-        t("mail.paidBody", { name: req.user.name, date: until.toLocaleDateString(t.locale), link: `${site()}/` }),
-        t.dir,
-        { action: { label: t("mail.paidButton"), url: `${site()}/` }, footer: t("mail.footer") },
-      ).catch(() => {});
-    }
+  if (granted) {
+    const { req, until } = granted;
+    const t = (await getT());
+    await sendMail(
+      req.user.email,
+      t("mail.paidSubject"),
+      t("mail.paidBody", { name: req.user.name, date: until.toLocaleDateString(t.locale), link: `${site()}/` }),
+      t.dir,
+      { action: { label: t("mail.paidButton"), url: `${site()}/` }, footer: t("mail.footer") },
+    ).catch(() => {});
   }
   revalidatePath("/admin/payments");
 }

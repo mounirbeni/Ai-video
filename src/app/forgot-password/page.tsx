@@ -2,8 +2,8 @@ import SimpleForm from "@/components/SimpleForm";
 import { forgotPassword } from "@/app/actions/auth";
 import { getT } from "@/lib/i18n/server";
 
-export default function ForgotPassword() {
-  const t = getT();
+export default async function ForgotPassword() {
+  const t = (await getT());
   return (
     <div className="mx-auto max-w-md px-4 py-20">
       <div className="card">

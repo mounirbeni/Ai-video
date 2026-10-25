@@ -2,17 +2,20 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { SignJWT, jwtVerify } from "jose";
 import { db } from "./db";
+import { sessionSecret, validSessionVersion } from "./session-security";
+import { cache } from "react";
 
 const COOKIE = "session";
-const secret = () => new TextEncoder().encode(process.env.AUTH_SECRET || "dev-secret");
+const secret = sessionSecret;
 
 export async function createSession(userId: string) {
-  const token = await new SignJWT({ sub: userId })
+  const user = await db.user.findUniqueOrThrow({ where: { id: userId }, select: { sessionVersion: true } });
+  const token = await new SignJWT({ sub: userId, version: user.sessionVersion })
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
     .setExpirationTime("30d")
     .sign(secret());
-  cookies().set(COOKIE, token, {
+  (await cookies()).set(COOKIE, token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
@@ -21,21 +24,22 @@ export async function createSession(userId: string) {
   });
 }
 
-export function destroySession() {
-  cookies().delete(COOKIE);
+export async function destroySession() {
+  (await cookies()).delete(COOKIE);
 }
 
-export async function getUser() {
-  const token = cookies().get(COOKIE)?.value;
+export const getUser = cache(async () => {
+  const token = (await cookies()).get(COOKIE)?.value;
   if (!token) return null;
   try {
     const { payload } = await jwtVerify(token, secret());
     if (!payload.sub) return null;
-    return await db.user.findUnique({ where: { id: payload.sub } });
+    const user = await db.user.findUnique({ where: { id: payload.sub } });
+    return user && validSessionVersion(payload.version, user.sessionVersion) ? user : null;
   } catch {
     return null;
   }
-}
+});
 
 export type SessionUser = NonNullable<Awaited<ReturnType<typeof getUser>>>;
 

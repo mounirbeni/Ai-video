@@ -2,12 +2,12 @@ import LegalPage from "@/components/LegalPage";
 import { getLocale } from "@/lib/i18n/server";
 import { contactEmail } from "@/lib/contact";
 
-export function generateMetadata() {
-  return { title: getLocale() === "ar" ? "سياسة الاسترداد — Nexora" : "Refund Policy — Nexora" };
+export async function generateMetadata() {
+  return { title: (await getLocale()) === "ar" ? "سياسة الاسترداد — Nexora" : "Refund Policy — Nexora" };
 }
 
-export default function Refund() {
-  const ar = getLocale() === "ar";
+export default async function Refund() {
+  const ar = (await getLocale()) === "ar";
   const email = contactEmail();
   const AR: [string, string][] = [
     ["1. مدة الاسترداد", "يمكنك طلب استرداد كامل خلال 14 يومًا من تاريخ أي عملية شراء على Nexora، سواء كانت اشتراكًا شهريًا أو سنويًا أو باقة دعم لمرة واحدة."],

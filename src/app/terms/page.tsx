@@ -2,8 +2,8 @@ import LegalPage from "@/components/LegalPage";
 import { getLocale } from "@/lib/i18n/server";
 import { contactEmail } from "@/lib/contact";
 
-export function generateMetadata() {
-  return { title: getLocale() === "ar" ? "شروط الاستخدام — Nexora" : "Terms of Use — Nexora" };
+export async function generateMetadata() {
+  return { title: (await getLocale()) === "ar" ? "شروط الاستخدام — Nexora" : "Terms of Use — Nexora" };
 }
 
 const email = contactEmail();
@@ -35,7 +35,7 @@ const EN: [string, string][] = [
         ["10. Contact", email ? `For any questions, contact us at ${email}.` : "For any questions, contact us through your Account page."],
       ];
 
-export default function Terms() {
-  const ar = getLocale() === "ar";
+export default async function Terms() {
+  const ar = (await getLocale()) === "ar";
   return <LegalPage title={ar ? "شروط الاستخدام" : "Terms of Use"} updated="2026-10-19" sections={ar ? AR : EN} />;
 }

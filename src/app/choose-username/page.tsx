@@ -6,11 +6,13 @@ import { getT } from "@/lib/i18n/server";
 
 export const dynamic = "force-dynamic";
 
-export default async function ChooseUsername({ searchParams }: { searchParams: { next?: string } }) {
+export default async function ChooseUsername({ searchParams: searchParamsPromise }: { searchParams: Promise<{ next?: string }> }) {
+  const searchParams = await searchParamsPromise;
+
   const user = await requireUser("/choose-username");
   const next = searchParams.next?.startsWith("/") && !searchParams.next.startsWith("//") ? searchParams.next : "/";
   if (user.username) redirect(next);
-  const t = getT();
+  const t = (await getT());
   return (
     <div className="mx-auto max-w-md px-4 py-16">
       <div className="card">

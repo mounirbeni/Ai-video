@@ -11,12 +11,14 @@ import { CheckIcon, ClockIcon, LockIcon, ShieldIcon, SparkleIcon } from "@/compo
 
 export const dynamic = "force-dynamic";
 
-export default async function Pay({ searchParams }: { searchParams: { item?: string; via?: string; amount?: string } }) {
+export default async function Pay({ searchParams: searchParamsPromise }: { searchParams: Promise<{ item?: string; via?: string; amount?: string }> }) {
+  const searchParams = await searchParamsPromise;
+
   const item = searchParams.item ?? "";
   const user = await requireUser(`/pay?item=${item}${searchParams.amount ? `&amount=${searchParams.amount}` : ""}`);
   if (item === "donation") return <Donation cents={donationCents(searchParams.amount)} />;
   if (!isItem(item)) redirect("/pricing");
-  const t = getT();
+  const t = (await getT());
   const methods = await getMethods(t.locale);
   if (!methods.length && !paypalLive) redirect("/pricing");
   const it = ITEMS[item];
@@ -114,9 +116,9 @@ export default async function Pay({ searchParams }: { searchParams: { item?: str
 }
 
 // تبرع حر بالمبلغ الذي اختاره الداعم (PayPal فقط)
-function Donation({ cents }: { cents: number }) {
+async function Donation({ cents }: { cents: number }) {
   if (!paypalLive || !cents) redirect("/support");
-  const t = getT();
+  const t = (await getT());
   const usd = centsToUsd(cents);
   return (
     <div className="relative overflow-hidden">

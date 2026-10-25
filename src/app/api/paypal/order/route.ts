@@ -9,7 +9,7 @@ export async function POST(req: Request) {
   if (!user) return NextResponse.json({ error: "login" }, { status: 401 });
   const { item, amount } = await req.json().catch(() => ({}));
   if (!paypalLive || typeof item !== "string") return NextResponse.json({ error: "bad" }, { status: 400 });
-  const t = getT();
+  const t = (await getT());
   try {
     if (item === "donation") {
       const cents = donationCents(amount);
