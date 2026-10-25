@@ -1,3 +1,4 @@
+import WatchlistButton from "@/components/WatchlistButton";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
@@ -9,15 +10,19 @@ import { HeartIcon, LockIcon, PlayIcon } from "@/components/Icons";
 
 export const dynamic = "force-dynamic";
 
-export default async function TitlePage({ params }: { params: { slug: string } }) {
+export default async function TitlePage({ params: paramsPromise }: { params: Promise<{ slug: string }> }) {
+  const params = await paramsPromise;
+
   const raw = await db.title.findUnique({
     where: { slug: decodeURIComponent(params.slug) },
     include: { episodes: { orderBy: [{ season: "asc" }, { number: "asc" }] } },
   });
   if (!raw || !raw.published) notFound();
-  const t = localizeTitle(raw, getLocale());
-  const subscribed = isSubscribed(await getUser());
-  const tr = getT();
+  const t = localizeTitle(raw, (await getLocale()));
+  const user = await getUser();
+  const subscribed = isSubscribed(user);
+  const saved = user ? !!await db.watchlist.findUnique({ where: { userId_titleId: { userId: user.id, titleId: t.id } } }) : false;
+  const tr = (await getT());
   const seasons = Array.from(new Set(t.episodes.map((e) => e.season)));
   // ملف فيديو (مرفوع أو داخل الموقع) يُعرض في مشغّل مجاني بالصفحة؛ غير ذلك (يوتيوب مثلًا) يبقى رابطًا خارجيًا
   const inlineTrailer = !!t.trailerUrl && (t.trailerUrl.startsWith("/") || /\.(mp4|webm|mov)(\?|$)/i.test(t.trailerUrl));
@@ -62,6 +67,7 @@ export default async function TitlePage({ params }: { params: { slug: string } }
               {t.trailerUrl && inlineTrailer && (
                 <a href="#trailer" className={t.comingSoon ? "btn-primary" : "btn-ghost"}><PlayIcon />{tr("title.watchTrailer")}</a>
               )}
+              {user ? <WatchlistButton titleId={t.id} saved={saved} /> : <Link className="btn-ghost" href={`/login?next=${encodeURIComponent(`/title/${t.slug}`)}`}>{tr("list.add")}</Link>}
               <Link href="/support" className="btn-ghost"><HeartIcon />{tr("support.thisTitle")}</Link>
               {t.trailerUrl && !inlineTrailer && (
                 <a href={t.trailerUrl} target="_blank" rel="noreferrer" className="btn-ghost">{tr("title.trailer")}</a>

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { transaction } from "@/lib/transaction";
 import { db } from "@/lib/db";
 import { planForPrice, tierForPrice, verifyPaddleSignature } from "@/lib/paddle";
 import { SUPPORT_TIERS } from "@/lib/plans";
@@ -29,8 +30,10 @@ async function grantSupport(tx: Transaction) {
     : tx.customer_id ? await db.user.findUnique({ where: { paddleCustomerId: tx.customer_id } }) : null;
   if (!user) return;
   const t = SUPPORT_TIERS[tier];
-  const base = user.accessUntil && user.accessUntil > new Date() ? user.accessUntil : new Date();
-  await db.$transaction(async (q) => {
+  await transaction(async (q) => {
+    await q.$queryRaw`SELECT "id" FROM "User" WHERE "id" = ${user.id} FOR UPDATE`;
+    const current = await q.user.findUniqueOrThrow({ where: { id: user.id } });
+    const base = current.accessUntil && current.accessUntil > new Date() ? current.accessUntil : new Date();
     // المعرّف فريد: إن سبق تسجيل المعاملة فشلت الإضافة ولم تُمنح الأيام مرة ثانية
     const fresh = await q.support.createMany({ data: [{ id: tx.id, userId: user.id, tier, amountCents: t.cents }], skipDuplicates: true });
     if (fresh.count === 0) return;
@@ -38,7 +41,7 @@ async function grantSupport(tx: Transaction) {
       where: { id: user.id },
       data: {
         accessUntil: new Date(base.getTime() + t.days * 86400000),
-        supporterSince: user.supporterSince ?? new Date(),
+        supporterSince: current.supporterSince ?? new Date(),
         paddleCustomerId: user.paddleCustomerId ?? tx.customer_id ?? undefined,
       },
     });

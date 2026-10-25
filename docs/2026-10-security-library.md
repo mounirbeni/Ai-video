@@ -1,0 +1,71 @@
+# Account security, payments and viewer library update
+
+## Rollout
+
+This branch upgrades Next.js 14 to 16.4.3 and React 18 to 19.3.1, including async request APIs and form hooks. Use Node.js 24 on Vercel (Node 24 locally).
+
+Vercel Git deployments use the repository's `vercel.json` build command (`npm run build`), overriding the legacy dashboard command that ran `db push`, seed and a bare `next build` on every branch. Node.js is pinned to 24.x.
+
+For Vercel production builds, `scripts/prepare-production.mjs` checks `DATABASE_URL`, a unique `AUTH_SECRET` of at least 32 characters, and an HTTPS `APP_URL` origin before applying the reviewed additive SQL. It uses a transaction, an advisory lock, lock/statement timeouts, and existence checks so concurrent/repeated builds are safe. It does not run seed, reset or generic schema synchronization. A preparation failure stops the new build.
+
+Preview and local builds skip database preparation. Configure preview deployments with their own upgraded database; previews never mutate a shared database through the build script. Take a database backup using your existing administration tools before a first production rollout. All previously issued login sessions are invalidated once after deployment; users sign in again.
+
+For an existing database deployed outside Vercel, apply the same repeatable update manually before publishing:
+
+```sh
+npm ci
+npm run db:upgrade
+npm run build
+```
+
+This adds session versions, watchlists, persistent attempt counters, completion flags and subtitle/HLS settings. It does not remove existing content, payments or users, and tolerates a database already updated by `db push`. The repository has no migration baseline: do not run `migrate reset` against an existing database. For a brand-new database use `npm run db:push` first. Test a sandbox payment and actual media delivery after rollout.
+
+No production credentials are downloaded into the implementation workspace. Vercel uses the project's configured production environment when it builds the merged branch.
+
+Production builds explicitly use Webpack because the existing favicon’s embedded PNG format is rejected by Turbopack. The existing icon is preserved.
+
+## Features
+
+- **My list:** save published titles from their details page; remove from the list. Available in desktop navigation and from Account on mobile. Lists are private to each account.
+- **Continue watching:** home row resumes movies and specific episodes. Completed items and unpublished/coming-soon titles are hidden. Series show the most recently watched unfinished episode.
+- **Player:** bounded automatic retries, visible network/access/device-limit errors, manual retry and subscription-account link.
+- **Subtitles:** administrators enter WebVTT tracks in the title/episode form, one per line: `ar | العربية | https://cdn.example.com/ar.vtt`. Subtitle URLs must use HTTPS and end in `.vtt`. Hosting must send correct CORS headers for the site origin (including video responses when cross-origin subtitle loading requires it).
+- **Adaptive quality:** choose HLS in the admin form and supply an existing HLS master manifest URL. Safari uses native HLS; other supported browsers load hls.js on demand, with Auto and available rendition choices. This does not transcode existing MP4 uploads or generate subtitle files. The manifest, variants and segments need correct CORS and access control on the media host; signing only a manifest does not protect public segments. Keep private MP4 storage as-is until an HLS delivery pipeline is configured.
+
+## Security and payment behavior
+
+- Attempt limits persist across server instances: login (10/account/15 min), register (5/account/hour), reset email (3/account/hour), verification mail (3/account/hour), password changes and reset token submission (10/account or token/15 min). Address buckets allow 10 times the corresponding limit. On Vercel, the trusted ingress address header is used. Other hosts must overwrite `x-forwarded-for` at their trusted proxy. Expired counters can be removed periodically with `DELETE FROM "RateLimit" WHERE "expiresAt" < NOW();`.
+- Password changes and resets increment `sessionVersion` and invalidate pending reset tokens. Reset-token consumption and password update are transactional.
+- PayPal capture recording and access grants, activation-code consumption and grants, and manual payment approval and grants commit together. Duplicate confirmations cannot extend access twice. Database failures roll back the operation so it can be retried.
+- Serializable transactions retry conflicts. Access extensions and stream reservations lock the account row to prevent competing updates.
+- Dependency overrides patch Zod within @vercel/cli-config (same major) and selector parsing used by Tailwind/PostCSS. These retain the existing Tailwind 3 styling; run the build when updating them. `npm audit` reported zero advisories at implementation time.
+
+## Verification
+
+```sh
+npm ci
+npx prisma generate
+npm run typecheck
+npm run lint
+npm test
+npm audit
+npm run build
+```
+
+Unit tests always run. Database integration tests run only when `TEST_DATABASE_URL` points to an **isolated database named `nexora_test`**. They create/delete test fixtures and install a temporary failure-injection trigger. Never point them at a real site database.
+
+```sh
+# Create the isolated test database first, then:
+DATABASE_URL="$TEST_DATABASE_URL" npm run db:push
+npm run test:integration
+```
+
+The database update was tested by creating the original schema in a fresh Postgres 16 database, applying the SQL, and testing the upgraded code. Integration tests cover session revocation, password-reset reuse, concurrent attempt limits, duplicate captures, payment rollback/retry, activation codes, manual approvals, watchlist ownership and progress validation. PayPal and email transport are mocked; the database, transactions, token signing and password hashing are real. Tests do not charge cards or send email.
+
+Implementation validation: 14 tests passed against the isolated Postgres database, type checking passed, production Webpack build passed, and lint passed with existing warnings (fonts/navigation and redundant image-rule suppressions). HTTP smoke checks passed for public pages in English/Arabic, authenticated My list/title/watch pages, resume/completion visibility, stream HEAD authorization and revoked-session redirects. Browser visual review and real provider/media delivery remain unverified.
+
+## Master integration
+
+The repository contained only `master` and `codex/security-library-20261025` at integration time. The feature branch descends from the current master and includes its latest episode/media changes. The merge retains those existing files. Vercel inspection established that the failed preview used the dashboard's old build override; the repository build command now enforces the tested Webpack build.
+
+Master integration validation: 19 tests passed, including repeatable production schema preparation, preservation of existing rows and saved lists, rollback on partial failure, and no schema writes during preview preparation. Type checking and lint passed. The full production-build path was exercised against the isolated test database. Existing media files and seed content are unchanged from master.

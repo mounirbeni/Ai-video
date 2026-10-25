@@ -11,14 +11,16 @@ import { CheckIcon } from "@/components/Icons";
 
 export const dynamic = "force-dynamic";
 
-export function generateMetadata() {
-  const t = getT();
+export async function generateMetadata() {
+  const t = (await getT());
   return { title: `${t("support.nav")} — ${t("brand")}` };
 }
 
-export default async function Support({ searchParams }: { searchParams: { thanks?: string } }) {
+export default async function Support({ searchParams: searchParamsPromise }: { searchParams: Promise<{ thanks?: string }> }) {
+  const searchParams = await searchParamsPromise;
+
   const user = await getUser();
-  const t = getT();
+  const t = (await getT());
   const manual = !paddleCheckout && (paypalLive || (await getMethods()).length > 0);
 
   return (

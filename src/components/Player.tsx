@@ -1,193 +1,185 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import type Hls from "hls.js";
+import type { Subtitle } from "@/lib/subtitles";
 import { useT } from "@/lib/i18n/client";
 import { ExpandIcon } from "@/components/Icons";
 
 type Props = {
-  src: string;
-  poster?: string;
-  progressKey?: string;
-  startAt: number;
-  nextHref?: string;
-  watermark?: string;
+  src: string; poster?: string; progressKey?: string; startAt: number;
+  nextHref?: string; watermark?: string; format?: "file" | "hls"; subtitles?: Subtitle[];
 };
+type Failure = "blocked" | "access" | "error" | null;
 
-export default function Player({ src, poster, progressKey, startAt, nextHref, watermark }: Props) {
+export default function Player({ src, poster, progressKey, startAt, nextHref, watermark, format = "file", subtitles = [] }: Props) {
   const box = useRef<HTMLDivElement>(null);
   const ref = useRef<HTMLVideoElement>(null);
+  const hls = useRef<Hls | null>(null);
+  const retries = useRef(0);
+  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const resume = useRef(startAt);
+  const recovering = useRef(false);
   const router = useRouter();
   const [mark, setMark] = useState({ top: 10, left: 10 });
-  const [blocked, setBlocked] = useState(false);
-  const retry = useRef({ at: 0, count: 0 });
+  const [failure, setFailure] = useState<Failure>(null);
+  const [generation, setGeneration] = useState(0);
+  const [levels, setLevels] = useState<{ height: number; bitrate: number }[]>([]);
+  const [quality, setQuality] = useState(-1);
   const t = useT();
 
-  // حفظ موضع المشاهدة
-  useEffect(() => {
+  const recover = useCallback(async () => {
     const v = ref.current;
-    if (!v || !progressKey) return;
-    let last = 0;
-    const save = () => {
-      if (Math.abs(v.currentTime - last) < 5) return;
-      last = v.currentTime;
+    if (!v || recovering.current) return;
+    recovering.current = true;
+    resume.current = Number.isFinite(v.currentTime) && v.currentTime > 0 ? v.currentTime : resume.current;
+    v.pause();
+    try {
+      const response = await fetch(src, { method: "HEAD", redirect: "manual" });
+      if (response.status === 429) { setFailure("blocked"); return; }
+      if (response.status === 401 || response.status === 403) { setFailure("access"); return; }
+    } catch { /* A network failure is retried below. */ }
+    if (retries.current >= 3) { setFailure("error"); return; }
+    retries.current++;
+    timer.current = setTimeout(() => { recovering.current = false; setGeneration((n) => n + 1); }, retries.current * 1000);
+  }, [src]);
+
+  useEffect(() => {
+    const v = ref.current!;
+    let disposed = false;
+    recovering.current = false;
+    const url = generation ? `${src}${src.includes("?") ? "&" : "?"}r=${Date.now()}` : src;
+    const loaded = () => {
+      if (resume.current > 5 && resume.current < v.duration - 10) v.currentTime = resume.current;
+      v.play().catch(() => {});
+    };
+    v.addEventListener("loadedmetadata", loaded);
+    async function load() {
+      if (format === "hls" && !v.canPlayType("application/vnd.apple.mpegurl")) {
+        const { default: Hls } = await import("hls.js");
+        if (disposed) return;
+        if (!Hls.isSupported()) { setFailure("error"); return; }
+        const engine = new Hls();
+        hls.current = engine;
+        engine.on(Hls.Events.MANIFEST_PARSED, () => {
+          setLevels(engine.levels.map((l) => ({ height: l.height, bitrate: l.bitrate })));
+          setQuality(-1);
+        });
+        engine.on(Hls.Events.ERROR, (_event, data) => { if (data.fatal) void recover(); });
+        engine.loadSource(url);
+        engine.attachMedia(v);
+      } else {
+        v.src = url;
+        v.load();
+      }
+    }
+    load().catch(() => setFailure("error"));
+    return () => {
+      disposed = true;
+      clearTimeout(timer.current);
+      v.removeEventListener("loadedmetadata", loaded);
+      hls.current?.destroy();
+      hls.current = null;
+      v.removeAttribute("src");
+      v.load();
+    };
+  }, [src, format, generation, recover]);
+
+  useEffect(() => {
+    const v = ref.current!;
+    let lastSaved = -10;
+    const save = (completed = false, force = false) => {
+      if (!progressKey || !Number.isFinite(v.currentTime) || (!force && Math.abs(v.currentTime - lastSaved) < 10)) return;
+      lastSaved = v.currentTime;
       fetch("/api/progress", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ key: progressKey, seconds: v.currentTime }),
-        keepalive: true,
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ key: progressKey, seconds: v.currentTime, completed }), keepalive: true,
       }).catch(() => {});
     };
-    v.addEventListener("timeupdate", save);
-    v.addEventListener("pause", save);
+    const update = () => save();
+    const paused = () => save(false, true);
+    const ended = () => { save(true, true); if (nextHref) router.push(nextHref); };
+    v.addEventListener("timeupdate", update);
+    v.addEventListener("pause", paused);
+    v.addEventListener("ended", ended);
+    window.addEventListener("pagehide", paused);
     return () => {
-      v.removeEventListener("timeupdate", save);
-      v.removeEventListener("pause", save);
+      v.removeEventListener("timeupdate", update);
+      v.removeEventListener("pause", paused);
+      v.removeEventListener("ended", ended);
+      window.removeEventListener("pagehide", paused);
     };
-  }, [progressKey]);
+  }, [progressKey, nextHref, router]);
 
-  // العلامة المائية تتنقل عشوائيًا حتى لا يسهل قصّها
   useEffect(() => {
     if (!watermark) return;
     const id = setInterval(() => setMark({ top: 5 + Math.random() * 80, left: 5 + Math.random() * 60 }), 7000);
     return () => clearInterval(id);
   }, [watermark]);
 
-  // ملء الشاشة للحاوية (لا للفيديو وحده) حتى تبقى العلامة المائية ظاهرة
   useEffect(() => {
-    const onFs = () => {
+    if (!watermark) return;
+    const v = ref.current!;
+    const beat = () => fetch("/api/heartbeat", { method: "POST", body: "{}" }).then((r) => {
+      if (r.status === 429 || r.status === 401 || r.status === 403) {
+        v.pause(); setFailure(r.status === 429 ? "blocked" : "access");
+      }
+    }).catch(() => {});
+    const id = setInterval(() => { if (!v.paused) void beat(); }, 30000);
+    const stop = () => navigator.sendBeacon?.("/api/heartbeat", JSON.stringify({ stop: true }));
+    window.addEventListener("pagehide", stop);
+    return () => { clearInterval(id); window.removeEventListener("pagehide", stop); stop(); };
+  }, [watermark]);
+
+  useEffect(() => {
+    const v = ref.current!;
+    let waiting: ReturnType<typeof setTimeout> | undefined;
+    const stall = () => { clearTimeout(waiting); waiting = setTimeout(() => { if (!v.paused && v.readyState < 3) void recover(); }, 10000); };
+    const playing = () => { clearTimeout(waiting); };
+    v.addEventListener("waiting", stall);
+    v.addEventListener("playing", playing);
+    return () => { clearTimeout(waiting); v.removeEventListener("waiting", stall); v.removeEventListener("playing", playing); };
+  }, [recover]);
+
+  useEffect(() => {
+    const onFullscreen = () => {
       if (document.fullscreenElement === ref.current && box.current) {
         document.exitFullscreen().then(() => box.current?.requestFullscreen()).catch(() => {});
       }
     };
-    document.addEventListener("fullscreenchange", onFs);
-    return () => document.removeEventListener("fullscreenchange", onFs);
-  }, []);
-
-  // نبضة كل 30 ثانية أثناء التشغيل لمنع مشاركة الحساب
-  useEffect(() => {
-    if (!watermark) return;
-    const v = ref.current!;
-    const beat = () =>
-      fetch("/api/heartbeat", { method: "POST", body: "{}" })
-        .then((r) => {
-          if (r.status === 429) {
-            v.pause();
-            setBlocked(true);
-          }
-        })
-        .catch(() => {});
-    const id = setInterval(() => !v.paused && beat(), 30000);
-    const stop = () => navigator.sendBeacon?.("/api/heartbeat", JSON.stringify({ stop: true }));
-    window.addEventListener("pagehide", stop);
-    return () => {
-      clearInterval(id);
-      window.removeEventListener("pagehide", stop);
-    };
-  }, [watermark]);
-
-  // قد يفشل التحميل قبل أن يُربط معالج الخطأ (الفيديو يبدأ قبل اكتمال تحميل الصفحة)
-  useEffect(() => {
-    if (ref.current?.error) onError();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // عند انتهاء الرابط يتوقف المتصفح عن التحميل دون خطأ؛ إن طال الانتظار نجدد الرابط
-  useEffect(() => {
-    const v = ref.current!;
-    let timer: ReturnType<typeof setTimeout> | undefined;
-    const waiting = () => {
-      clearTimeout(timer);
-      timer = setTimeout(() => v.readyState < 3 && !v.paused && onError(), 3000);
-    };
-    const resumed = () => clearTimeout(timer);
-    v.addEventListener("waiting", waiting);
-    v.addEventListener("playing", resumed);
-    return () => {
-      clearTimeout(timer);
-      v.removeEventListener("waiting", waiting);
-      v.removeEventListener("playing", resumed);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    document.addEventListener("fullscreenchange", onFullscreen);
+    return () => document.removeEventListener("fullscreenchange", onFullscreen);
   }, []);
 
   function toggleFullscreen() {
-    const el = box.current!;
     if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
-    else if (el.requestFullscreen) el.requestFullscreen().catch(() => {});
-    // iPhone لا يدعم ملء الشاشة لغير الفيديو: نستخدم ملء الشاشة الأصلي (تختفي العلامة المائية هناك)
-    else (ref.current as HTMLVideoElement & { webkitEnterFullscreen?: () => void }).webkitEnterFullscreen?.();
+    else if (box.current?.requestFullscreen) box.current.requestFullscreen().catch(() => {});
+    else (ref.current as HTMLVideoElement & { webkitEnterFullscreen?: () => void })?.webkitEnterFullscreen?.();
   }
 
-  // الرابط الموقّع قصير العمر: عند انتهائه نطلب رابطًا جديدًا ونكمل من نفس الموضع
-  function onError() {
-    const v = ref.current!;
-    const now = Date.now();
-    if (now - retry.current.at > 60000) retry.current.count = 0;
-    if (retry.current.count >= 3) return;
-    retry.current = { at: now, count: retry.current.count + 1 };
-    const t = v.currentTime;
-    const playing = !v.paused || v.autoplay;
-    // redirect: "manual" — لا نتبع التحويل إلى التخزين (نطاق آخر)، يكفينا معرفة إن كان الوصول مرفوضًا
-    fetch(src, { method: "HEAD", redirect: "manual" })
-      .then((r) => r.status)
-      .catch(() => 0)
-      .then((status) => {
-        if (status === 429) return setBlocked(true);
-        v.src = `${src}?r=${now}`;
-        v.addEventListener("loadedmetadata", () => { v.currentTime = t; if (playing) v.play().catch(() => {}); }, { once: true });
-        v.load();
-      });
-  }
-
-  return (
-    <div ref={box} className="relative overflow-hidden rounded-xl bg-black shadow-2xl">
-      <video
-        ref={ref}
-        src={src}
-        poster={poster}
-        controls
-        autoPlay
-        playsInline
-        controlsList="nodownload noremoteplayback nofullscreen"
-        disablePictureInPicture
-        onContextMenu={(e) => e.preventDefault()}
-        onDoubleClick={(e) => {
-          e.preventDefault();
-          toggleFullscreen();
-        }}
-        onLoadedMetadata={(e) => {
-          if (startAt > 5 && startAt < e.currentTarget.duration - 10 && retry.current.count === 0)
-            e.currentTarget.currentTime = startAt;
-        }}
-        onError={onError}
-        onEnded={() => nextHref && router.push(nextHref)}
-        className="aspect-video h-full w-full"
-      />
-      <button
-        type="button"
-        onClick={toggleFullscreen}
-        aria-label={t("player.fullscreen")}
-        className="absolute end-3 top-3 rounded-md bg-black/50 px-2.5 py-1 text-sm text-white/80 hover:bg-black/70"
-      >
-        <ExpandIcon />
-      </button>
-      {watermark && (
-        <span
-          className="pointer-events-none absolute select-none whitespace-nowrap text-xs text-white/30 transition-all duration-1000 sm:text-sm"
-          style={{ top: `${mark.top}%`, left: `${mark.left}%` }}
-          dir="ltr"
-        >
-          {watermark}
-        </span>
-      )}
-      {blocked && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-black/85 p-6 text-center">
-          <p className="text-lg font-bold">{t("player.blockedTitle")}</p>
-          <p className="text-sm text-neutral-400">{t("player.blockedText")}</p>
-          <button className="btn-primary" onClick={() => location.reload()}>{t("player.retry")}</button>
-        </div>
-      )}
+  return <div ref={box} className="relative overflow-hidden rounded-xl bg-black shadow-2xl">
+    <video ref={ref} poster={poster} controls playsInline crossOrigin={subtitles.length ? "anonymous" : undefined}
+      controlsList="nodownload noremoteplayback nofullscreen" disablePictureInPicture
+      onContextMenu={(e) => e.preventDefault()} onDoubleClick={(e) => { e.preventDefault(); toggleFullscreen(); }}
+      onError={() => { if (ref.current?.getAttribute("src") || hls.current) void recover(); }}
+      className="aspect-video h-full w-full">
+      {subtitles.map((s) => <track key={`${s.language}:${s.src}`} kind="subtitles" src={s.src} srcLang={s.language} label={s.label} />)}
+    </video>
+    <div className="absolute end-3 top-3 flex gap-2">
+      {levels.length > 1 && <label className="rounded bg-black/70 p-1 text-sm">{t("player.quality")}
+        <select className="ms-2 bg-black text-white" value={quality} onChange={(e) => { const n = Number(e.target.value); if (hls.current) hls.current.currentLevel = n; setQuality(n); }}>
+          <option value={-1}>{t("player.auto")}</option>{levels.map((l, i) => <option value={i} key={i}>{l.height ? `${l.height}p` : `${Math.round(l.bitrate / 1000)} kbps`}</option>)}
+        </select>
+      </label>}
+      <button type="button" onClick={toggleFullscreen} aria-label={t("player.fullscreen")} className="rounded-md bg-black/50 px-2.5 py-1 text-white/80"><ExpandIcon /></button>
     </div>
-  );
+    {watermark && <span className="pointer-events-none absolute select-none whitespace-nowrap text-xs text-white/30 transition-all duration-1000 sm:text-sm" style={{ top: `${mark.top}%`, left: `${mark.left}%` }} dir="ltr">{watermark}</span>}
+    {failure && <div role="alert" className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-black/85 p-6 text-center">
+      <p className="text-lg font-bold">{t(failure === "blocked" ? "player.blockedTitle" : failure === "access" ? "player.access" : "player.error")}</p>
+      {failure === "blocked" && <p className="text-sm text-neutral-400">{t("player.blockedText")}</p>}
+      <button className="btn-primary" onClick={() => { clearTimeout(timer.current); retries.current = 0; recovering.current = false; setFailure(null); setGeneration((n) => n + 1); }}>{t("player.retry")}</button>
+      {failure === "access" && <a className="btn-ghost" href="/account">{t("nav.account")}</a>}
+    </div>}
+  </div>;
 }

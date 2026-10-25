@@ -11,8 +11,10 @@ export const dynamic = "force-dynamic";
 const amountOf = (p: { item: string; method: string }) =>
   isItem(p.item) ? Number(ITEMS[p.item].usd.replace(/[^\d.]/g, "")) : Number(/\$([\d.]+)/.exec(p.method)?.[1] ?? 0);
 
-export default async function Ledger({ searchParams }: { searchParams: { type?: string } }) {
-  const t = getT();
+export default async function Ledger({ searchParams: searchParamsPromise }: { searchParams: Promise<{ type?: string }> }) {
+  const searchParams = await searchParamsPromise;
+
+  const t = (await getT());
   const type = ["subs", "donations"].includes(searchParams.type ?? "") ? searchParams.type! : "all";
   const where = type === "donations" ? { item: "donation" } : type === "subs" ? { item: { in: ["monthly", "yearly"] } } : {};
   const [rows, approved] = await Promise.all([

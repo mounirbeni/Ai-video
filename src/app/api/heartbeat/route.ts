@@ -7,7 +7,7 @@ import { streamLimit } from "@/lib/access";
 export async function POST(req: Request) {
   const user = await getUser();
   if (!user) return NextResponse.json({ ok: true });
-  const device = deviceId();
+  const device = await deviceId();
   if ((await req.json().catch(() => ({}))).stop) {
     await releaseStream(user.id, device);
     return NextResponse.json({ ok: true });

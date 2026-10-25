@@ -1,9 +1,10 @@
 import type { Title } from "@prisma/client";
+import SubtitleFields from "./SubtitleFields";
 import UploadField from "./UploadField";
 import { getT } from "@/lib/i18n/server";
 
-export default function TitleForm({ action, t }: { action: (f: FormData) => void; t?: Title }) {
-  const tr = getT();
+export default async function TitleForm({ action, t }: { action: (f: FormData) => void; t?: Title }) {
+  const tr = (await getT());
   const isNew = !t;
   return (
     <form action={action} className="card grid gap-4 md:grid-cols-2">
@@ -37,6 +38,7 @@ export default function TitleForm({ action, t }: { action: (f: FormData) => void
           <UploadField name="videoSrc" label={tr("form.video")} kind="video" defaultValue={t?.videoSrc} hint={tr("form.videoHint")} />
         </div>
       )}
+      {(isNew || t?.type === "MOVIE") && <div className="md:col-span-2"><SubtitleFields subtitles={t?.subtitles} streamFormat={t?.streamFormat} /></div>}
       <div className="flex flex-wrap gap-6 md:col-span-2">
         <label className="flex items-center gap-2"><input type="checkbox" name="published" defaultChecked={t?.published ?? true} /> {tr("form.published")}</label>
         <label className="flex items-center gap-2"><input type="checkbox" name="featured" defaultChecked={t?.featured} /> {tr("form.featured")}</label>

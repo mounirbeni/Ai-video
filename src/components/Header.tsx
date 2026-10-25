@@ -7,7 +7,7 @@ import LangSwitch from "./LangSwitch";
 
 export default async function Header() {
   const user = await getUser();
-  const t = getT();
+  const t = (await getT());
   return (
     <header className="sticky top-0 z-40 border-b border-white/5 bg-neutral-950/80 backdrop-blur" style={{ paddingTop: "env(safe-area-inset-top)" }}>
       <div className="mx-auto flex max-w-7xl items-center gap-2 px-4 py-2.5 sm:gap-6 sm:py-3">
@@ -19,6 +19,7 @@ export default async function Header() {
           <Link href="/" className="hover:text-white">{t("nav.home")}</Link>
           <Link href="/browse?type=MOVIE" className="hover:text-white">{t("nav.movies")}</Link>
           <Link href="/browse?type=SERIES" className="hover:text-white">{t("nav.series")}</Link>
+          {user && <Link href="/my-list" className="hover:text-white">{t("list.title")}</Link>}
           <Link href="/pricing" className="hover:text-white">{t("nav.subscribe")}</Link>
           <Link href="/support" className="hover:text-white">{t("support.nav")}</Link>
         </nav>

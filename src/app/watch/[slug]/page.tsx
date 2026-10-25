@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { getUser, isSubscribed } from "@/lib/auth";
+import { readSubtitles } from "@/lib/subtitles";
 import Player from "@/components/Player";
 import { getLocale, getT } from "@/lib/i18n/server";
 import { localizeTitle } from "@/lib/i18n/localize";
@@ -9,13 +10,16 @@ import { ArrowNextIcon, ClockIcon, LockIcon } from "@/components/Icons";
 
 export const dynamic = "force-dynamic";
 
-export default async function Watch({ params, searchParams }: { params: { slug: string }; searchParams: { ep?: string } }) {
+export default async function Watch({ params: paramsPromise, searchParams: searchParamsPromise }: { params: Promise<{ slug: string }>; searchParams: Promise<{ ep?: string }> }) {
+  const params = await paramsPromise;
+  const searchParams = await searchParamsPromise;
+
   const raw = await db.title.findUnique({
     where: { slug: decodeURIComponent(params.slug) },
     include: { episodes: { orderBy: [{ season: "asc" }, { number: "asc" }] } },
   });
   if (!raw || !raw.published) notFound();
-  const t = localizeTitle(raw, getLocale());
+  const t = localizeTitle(raw, (await getLocale()));
 
   const user = await getUser();
   // الحسابات القديمة تختار اسم مستخدم قبل المشاهدة (يظهر في العلامة المائية)
@@ -23,7 +27,7 @@ export default async function Watch({ params, searchParams }: { params: { slug: 
     const qs = searchParams.ep ? `?ep=${searchParams.ep}` : "";
     redirect(`/choose-username?next=${encodeURIComponent(`/watch/${params.slug}${qs}`)}`);
   }
-  const tr = getT();
+  const tr = (await getT());
   if (t.comingSoon && user?.role !== "ADMIN") {
     return (
       <div className="mx-auto max-w-lg px-4 py-24 text-center">
@@ -60,6 +64,9 @@ export default async function Watch({ params, searchParams }: { params: { slug: 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6">
       <Player
+        key={key}
+        format={(ep?.streamFormat ?? t.streamFormat) === "hls" ? "hls" : "file"}
+        subtitles={readSubtitles(ep?.subtitles ?? t.subtitles)}
         src={ep ? `/api/stream/episode/${ep.id}` : `/api/stream/title/${t.id}`}
         poster={ep?.thumbUrl || t.backdropUrl || t.posterUrl || undefined}
         progressKey={user ? key : undefined}

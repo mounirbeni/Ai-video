@@ -15,6 +15,7 @@ model User {
   username           String?          @unique // يظهر كعلامة مائية على الفيديو
   name               String
   passwordHash       String
+  sessionVersion     Int              @default(0)
   role               String           @default("USER") // USER | ADMIN
   stripeCustomerId   String?          @unique
   paddleCustomerId   String?          @unique
@@ -32,6 +33,7 @@ model User {
   streams            ActiveStream[]
   supports           Support[]
   payments           PaymentRequest[]
+  watchlist          Watchlist[]
 }
 
 // دفعات الدعم لمرة واحدة؛ المعرّف هو رقم معاملة Paddle فلا تُحتسب الدفعة مرتين عند إعادة إرسال الإشعار
@@ -82,6 +84,8 @@ model Title {
   backdropUrl     String?
   trailerUrl      String?
   videoSrc        String? // للأفلام: local:<file> أو رابط https
+  subtitles       Json      @default("[]")
+  streamFormat    String    @default("file") // file | hls
   duration        Int? // بالدقائق — للأفلام فقط
   plannedEpisodes Int? // للمسلسلات: عدد الحلقات المعلن قبل رفعها
   language        String? // رمز لغة العمل الأصلية مثل en
@@ -92,6 +96,7 @@ model Title {
   published       Boolean   @default(true)
   createdAt       DateTime  @default(now())
   episodes        Episode[]
+  watchlist       Watchlist[]
 }
 
 model Episode {
@@ -105,6 +110,8 @@ model Episode {
   nameAr        String?
   descriptionAr String?
   videoSrc      String
+  subtitles     Json    @default("[]")
+  streamFormat  String  @default("file")
   thumbUrl      String? // صورة الحلقة (16:9)
   duration      Int?
   isFree        Boolean @default(false)
@@ -118,9 +125,28 @@ model WatchProgress {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   key       String // titleId أو episodeId
   seconds   Float
+  completed Boolean  @default(false)
   updatedAt DateTime @updatedAt
 
   @@unique([userId, key])
+}
+
+model Watchlist {
+  userId    String
+  titleId   String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     Title    @relation(fields: [titleId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@id([userId, titleId])
+}
+
+model RateLimit {
+  key       String   @id
+  attempts  Int
+  expiresAt DateTime
+
+  @@index([expiresAt])
 }
 
 // الدفع اليدوي: تحويل بنكي/CashPlus/… يؤكده المدير يدويًا من لوحة الإدارة

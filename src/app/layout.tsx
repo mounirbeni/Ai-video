@@ -8,8 +8,8 @@ import InstallPrompt from "@/components/InstallPrompt";
 import { I18nProvider } from "@/lib/i18n/client";
 import { getT } from "@/lib/i18n/server";
 
-export function generateMetadata(): Metadata {
-  const t = getT();
+export async function generateMetadata(): Promise<Metadata> {
+  const t = (await getT());
   return {
     title: t("meta.title"),
     description: t("meta.description"),
@@ -27,8 +27,8 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
-  const t = getT();
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const t = (await getT());
   return (
     <html lang={t.locale} dir={t.dir}>
       <head>

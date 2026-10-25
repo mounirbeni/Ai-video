@@ -1,5 +1,7 @@
 import crypto from "node:crypto";
 import { db } from "./db";
+import type { Prisma } from "@prisma/client";
+import { transaction } from "./transaction";
 
 // كل ما يمكن شراؤه يدويًا: أيام وصول تُضاف إلى accessUntil (مستقلة عن اشتراك Paddle)
 export const ITEMS = {
@@ -10,7 +12,7 @@ export const ITEMS = {
   producer: { nameKey: "support.producer", usd: "$25", mad: 250, days: 90, supporter: true },
 } as const;
 export type ItemId = keyof typeof ITEMS;
-export const isItem = (v: string): v is ItemId => v in ITEMS;
+export const isItem = (v: string): v is ItemId => Object.hasOwn(ITEMS, v);
 
 export type Method = { name: string; details: string };
 
@@ -45,15 +47,17 @@ export async function getMethods(lang: "en" | "ar" = "en") {
   return own.length ? own : parseMethods(await methodsText("en"));
 }
 
-export async function grantItem(userId: string, item: ItemId) {
+export async function grantItem(userId: string, item: ItemId, q?: Prisma.TransactionClient): Promise<Date> {
+  if (!q) return transaction((tx) => grantItem(userId, item, tx));
+  await q.$queryRaw`SELECT "id" FROM "User" WHERE "id" = ${userId} FOR UPDATE`;
   const it = ITEMS[item];
-  const user = await db.user.findUniqueOrThrow({ where: { id: userId } });
+  const user = await q.user.findUniqueOrThrow({ where: { id: userId } });
   const base = user.accessUntil && user.accessUntil > new Date() ? user.accessUntil : new Date();
   const accessUntil = new Date(base.getTime() + it.days * 86400000);
   // الخطة السنوية النشطة لا تُخفَّض إلى شهرية عند التمديد
   const keepYearly = user.accessPlan === "yearly" && user.accessUntil && user.accessUntil > new Date();
   const accessPlan = item === "yearly" || item === "monthly" ? (keepYearly ? "yearly" : item) : undefined;
-  await db.user.update({
+  await q.user.update({
     where: { id: userId },
     data: { accessUntil, ...(accessPlan ? { accessPlan } : {}), ...(it.supporter && !user.supporterSince ? { supporterSince: new Date() } : {}) },
   });

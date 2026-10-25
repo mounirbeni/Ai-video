@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useFormState, useFormStatus } from "react-dom";
+import { useActionState } from "react";
+import { useFormStatus } from "react-dom";
 import type { FormState } from "@/app/actions/auth";
 import type { Method } from "@/lib/manual";
 import { useT } from "@/lib/i18n/client";
@@ -64,7 +65,7 @@ export default function PayForm({
   returned: boolean;
 }) {
   const t = useT();
-  const [state, formAction] = useFormState(action, undefined);
+  const [state, formAction] = useActionState(action, undefined);
   const [method, setMethod] = useState(methods[0]?.name ?? "");
   const [more, setMore] = useState(false);
   const form = useRef<HTMLFormElement>(null);

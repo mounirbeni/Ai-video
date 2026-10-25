@@ -2,8 +2,8 @@ import Link from "next/link";
 import type { Title } from "@prisma/client";
 import { getT } from "@/lib/i18n/server";
 
-export default function TitleCard({ t }: { t: Title }) {
-  const tr = getT();
+export default async function TitleCard({ t }: { t: Title }) {
+  const tr = (await getT());
   return (
     <Link href={`/title/${t.slug}`} className="group w-40 shrink-0 sm:w-48">
       <div className="relative aspect-[9/16] overflow-hidden rounded-lg bg-neutral-800">

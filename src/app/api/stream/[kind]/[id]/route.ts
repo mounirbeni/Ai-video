@@ -7,7 +7,9 @@ import { getUser, isSubscribed } from "@/lib/auth";
 import { claimStream, deviceId } from "@/lib/streams";
 import { VIDEO_DIR, VIDEO_TYPES, objectKey, presignGet, remote, resolveIn } from "@/lib/storage";
 
-export async function GET(req: Request, { params }: { params: { kind: string; id: string } }) {
+export async function GET(req: Request, { params: paramsPromise }: { params: Promise<{ kind: string; id: string }> }) {
+  const params = await paramsPromise;
+
   let src: string | null = null;
   let free = false;
 
@@ -28,7 +30,7 @@ export async function GET(req: Request, { params }: { params: { kind: string; id
 
   const user = await getUser();
   if (!free && !isSubscribed(user)) return new NextResponse("Subscription required", { status: 403 });
-  if (user && !(await claimStream(user, deviceId())))
+  if (user && !(await claimStream(user, await deviceId())))
     return new NextResponse("Too many devices are watching on this account", { status: 429 });
 
   // رابط خارجي (CDN/تخزين سحابي)

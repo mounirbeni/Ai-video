@@ -10,7 +10,7 @@ export default async function Admin() {
     db.user.count(),
     db.user.count({ where: { subscriptionStatus: { in: ["active", "trialing"] } } }),
   ]);
-  const tr = getT();
+  const tr = (await getT());
 
   return (
     <div>

@@ -3,8 +3,10 @@ import AuthForm from "@/components/AuthForm";
 import { login } from "@/app/actions/auth";
 import { getT } from "@/lib/i18n/server";
 
-export default function Login({ searchParams }: { searchParams: { next?: string } }) {
-  const t = getT();
+export default async function Login({ searchParams: searchParamsPromise }: { searchParams: Promise<{ next?: string }> }) {
+  const searchParams = await searchParamsPromise;
+
+  const t = (await getT());
   return (
     <div className="mx-auto max-w-md px-4 py-20">
       <div className="card">

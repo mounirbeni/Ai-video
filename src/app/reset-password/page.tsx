@@ -2,8 +2,10 @@ import SimpleForm from "@/components/SimpleForm";
 import { resetPassword } from "@/app/actions/auth";
 import { getT } from "@/lib/i18n/server";
 
-export default function ResetPassword({ searchParams }: { searchParams: { token?: string } }) {
-  const t = getT();
+export default async function ResetPassword({ searchParams: searchParamsPromise }: { searchParams: Promise<{ token?: string }> }) {
+  const searchParams = await searchParamsPromise;
+
+  const t = (await getT());
   return (
     <div className="mx-auto max-w-md px-4 py-20">
       <div className="card">

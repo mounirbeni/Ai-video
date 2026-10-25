@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { db } from "@/lib/db";
+import ContinueWatching from "@/components/ContinueWatching";
 import Row from "@/components/Row";
 import { getT } from "@/lib/i18n/server";
 import { localizeTitle } from "@/lib/i18n/localize";
@@ -8,7 +9,7 @@ import { PlayIcon } from "@/components/Icons";
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const t = getT();
+  const t = (await getT());
   const published = { published: true, comingSoon: false };
   const [hero0, latest0, movies0, series0, free0, soon0] = await Promise.all([
     db.title.findFirst({ where: { published: true, featured: true }, orderBy: { createdAt: "desc" } }),
@@ -54,6 +55,7 @@ export default async function Home() {
           <Link href="/admin" className="btn-primary mt-6">{t("nav.admin")}</Link>
         </section>
       )}
+      <ContinueWatching />
       <Row title={t("row.soon")} items={soon} />
       <Row title={t("row.latest")} items={latest} />
       <Row title={t("row.movies")} items={movies} />

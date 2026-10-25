@@ -30,11 +30,13 @@ function Section({ icon, title, children }: { icon: React.ReactNode; title: stri
   );
 }
 
-export default async function Account({ searchParams }: { searchParams: { success?: string; verify?: string; sent?: string; reset?: string } }) {
+export default async function Account({ searchParams: searchParamsPromise }: { searchParams: Promise<{ success?: string; verify?: string; sent?: string; reset?: string }> }) {
+  const searchParams = await searchParamsPromise;
+
   const user = await requireUser("/account");
   const sub = isSubscribed(user);
   const plan = user.subscriptionPlan ? PLANS[user.subscriptionPlan as PlanId] : null;
-  const t = getT();
+  const t = (await getT());
   const status = (s: string) => (["none", "active", "trialing", "past_due", "canceled"].includes(s) ? t(`status.${s}` as "status.none") : s);
 
   const [payments, progress, whatsapp] = await Promise.all([
@@ -95,7 +97,8 @@ export default async function Account({ searchParams }: { searchParams: { succes
             {initial}
           </div>
           <div className="min-w-0">
-            <h1 className="truncate text-2xl font-bold">{user.name}</h1>
+            <Link href="/my-list" className="btn-ghost mb-4">{t("list.title")}</Link>
+      <h1 className="truncate text-2xl font-bold">{user.name}</h1>
             {user.username && <p className="text-sm text-brand" dir="auto">@{user.username}</p>}
             <p className="truncate text-sm text-neutral-400" dir="ltr">{user.email}</p>
           </div>

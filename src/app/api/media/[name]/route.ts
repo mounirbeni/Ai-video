@@ -3,7 +3,9 @@ import path from "node:path";
 import { NextResponse } from "next/server";
 import { IMAGE_DIR, IMAGE_TYPES, objectKey, presignGet, remote, resolveIn } from "@/lib/storage";
 
-export async function GET(_: Request, { params }: { params: { name: string } }) {
+export async function GET(_: Request, { params: paramsPromise }: { params: Promise<{ name: string }> }) {
+  const params = await paramsPromise;
+
   if (remote) {
     const res = NextResponse.redirect(await presignGet(objectKey("image", params.name), 24 * 3600), 302);
     res.headers.set("Cache-Control", "public, max-age=3600");
