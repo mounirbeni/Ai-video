@@ -6,6 +6,7 @@ import LangSwitch from "./LangSwitch";
 export default async function Footer() {
   const t = (await getT());
   const links = [
+    { href: "/community", label: t("community.nav") },
     { href: "/browse?type=MOVIE", label: t("nav.movies") },
     { href: "/browse?type=SERIES", label: t("nav.series") },
     { href: "/pricing", label: t("footer.pricing") },

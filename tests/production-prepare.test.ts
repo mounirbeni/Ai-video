@@ -53,6 +53,7 @@ describe.skipIf(!enabled)("production additive SQL", () => {
     expect(await db.$queryRawUnsafe('SELECT "avatarId" FROM "User"')).toEqual([{ avatarId: null }]);
     await db.$executeRawUnsafe(`UPDATE "User" SET "avatarId" = 'ember' WHERE "id" = 'viewer'`);
     await db.$executeRawUnsafe(`INSERT INTO "Watchlist" ("userId", "titleId") VALUES ('viewer', 'movie')`);
+    await db.$executeRawUnsafe(`INSERT INTO "CommunityPost" ("id", "authorId", "title", "body", "updatedAt") VALUES ('kept-post', 'viewer', 'Existing draft', 'A private draft that must survive repeated builds.', NOW())`);
     expect(prepare(url).status).toBe(0);
     const users = await db.$queryRawUnsafe<{ email: string; sessionVersion: number }[]>('SELECT "email", "sessionVersion" FROM "User"');
     expect(users).toEqual([{ email: "kept@example.test", sessionVersion: 0 }]);
@@ -60,6 +61,7 @@ describe.skipIf(!enabled)("production additive SQL", () => {
     expect(await db.$queryRawUnsafe('SELECT "name", "streamFormat", "subtitles" FROM "Title"')).toEqual([{ name: "Existing movie", streamFormat: "file", subtitles: [] }]);
     expect(await db.$queryRawUnsafe('SELECT "seconds", "completed" FROM "WatchProgress"')).toEqual([{ seconds: 120, completed: false }]);
     expect(await db.$queryRawUnsafe('SELECT "userId", "titleId" FROM "Watchlist"')).toEqual([{ userId: "viewer", titleId: "movie" }]);
+    expect(await db.$queryRawUnsafe('SELECT "title", "published", "version" FROM "CommunityPost"')).toEqual([{ title: "Existing draft", published: false, version: 0 }]);
   }, 30000);
   it("makes no schema changes during a preview build", async () => {
     const { db, url } = await fixture();

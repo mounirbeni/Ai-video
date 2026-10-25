@@ -88,6 +88,7 @@ export default async function Home() {
         </form>
       </div>
       <nav aria-label={t("home.collections")} className="no-scrollbar mt-6 flex gap-2 overflow-x-auto pb-2">
+        <Link href="/community" className="home-pill">{t("community.nav")}<ArrowNextIcon /></Link>
         <Link href={latest.length ? "#available" : "/browse"} className="home-pill border-brand/40 bg-brand/10 text-white"><PlayIcon />{t("home.available")}</Link>
         <Link href="/browse?type=SERIES" className="home-pill"><ScreenIcon />{t("nav.series")}</Link>
         <Link href="/browse?type=MOVIE" className="home-pill"><FilmIcon />{t("nav.movies")}</Link>
