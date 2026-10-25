@@ -19,7 +19,7 @@ export default async function Header() {
           <Link href="/" className="hover:text-white">{t("nav.home")}</Link>
           <Link href="/browse?type=MOVIE" className="hover:text-white">{t("nav.movies")}</Link>
           <Link href="/browse?type=SERIES" className="hover:text-white">{t("nav.series")}</Link>
-          {user && <Link href="/my-list" className="hover:text-white">{t("list.title")}</Link>}
+          <Link href="/my-list" className="hover:text-white">{t("list.title")}</Link>
           <Link href="/pricing" className="hover:text-white">{t("nav.subscribe")}</Link>
           <Link href="/support" className="hover:text-white">{t("support.nav")}</Link>
         </nav>
