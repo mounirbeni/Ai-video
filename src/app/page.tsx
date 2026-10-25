@@ -34,6 +34,7 @@ export default async function Home() {
   const saved = user && h ? !!await db.watchlist.findUnique({ where: { userId_titleId: { userId: user.id, titleId: h.id } } }) : false;
   const canPlay = h && !h.comingSoon && (h.type === "MOVIE" ? !!h.videoSrc : h._count.episodes > 0);
   const subscribed = isSubscribed(user);
+  const heroEpisodes = h ? h._count.episodes || h.plannedEpisodes || 0 : 0;
 
   return <div className="overflow-x-clip pb-4">
     {h ? <section aria-labelledby="featured-title" className="relative isolate flex min-h-[580px] items-end overflow-hidden bg-neutral-950 sm:min-h-[620px] sm:items-center lg:min-h-[700px]">
@@ -53,7 +54,7 @@ export default async function Home() {
             <span className="rounded border border-white/20 px-2 py-0.5">{t(`type.${h.type as "MOVIE" | "SERIES"}`)}</span>
             {h.year && <span>{h.year}</span>}
             {h.type === "MOVIE" && h.duration ? <span>{t("title.minutes", { n: h.duration })}</span> : null}
-            {h.type === "SERIES" && (h._count.episodes || h.plannedEpisodes) ? <span>{t("title.episodes", { n: h._count.episodes || h.plannedEpisodes! })}</span> : null}
+            {h.type === "SERIES" && heroEpisodes > 0 ? <span>{heroEpisodes === 1 ? t("title.episode") : t("title.episodes", { n: heroEpisodes })}</span> : null}
             {genresList(h.genres).slice(0, 2).map((genre) => <span key={genre} className="text-white/60">{genre}</span>)}
             {h.isFree && !h.comingSoon && <span className="text-emerald-300">{t("home.free")}</span>}
           </div>
