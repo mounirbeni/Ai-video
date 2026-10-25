@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && next build --webpack",
+    "build": "prisma generate && node scripts/prepare-production.mjs && next build --webpack",
     "start": "next start",
     "lint": "eslint .",
     "db:push": "prisma db push",
@@ -51,7 +51,7 @@
     "vitest": "^5.0.5"
   },
   "engines": {
-    "node": ">=22.12.0"
+    "node": "24.x"
   },
   "overrides": {
     "@vercel/cli-config": {

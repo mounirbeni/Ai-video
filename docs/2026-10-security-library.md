@@ -2,24 +2,25 @@
 
 ## Rollout
 
-This branch upgrades Next.js 14 to 16.4.3 and React 18 to 19.3.1, including async request APIs and form hooks. Use Node.js 24 on Vercel (Node >=22.12 locally).
+This branch upgrades Next.js 14 to 16.4.3 and React 18 to 19.3.1, including async request APIs and form hooks. Use Node.js 24 on Vercel (Node 24 locally).
 
-Before deploying this code:
+Vercel Git deployments use the repository's `vercel.json` build command (`npm run build`), overriding the legacy dashboard command that ran `db push`, seed and a bare `next build` on every branch. Node.js is pinned to 24.x.
 
-1. Take a database backup using your existing database administration tools.
-2. Set `AUTH_SECRET` to a unique randomly generated secret of at least 32 characters and `APP_URL` to your HTTPS production origin. Keep the existing secret if it already meets these requirements. The production runtime refuses missing or short secrets.
-3. Apply the **additive, one-time** SQL update to the existing database from this branch:
+For Vercel production builds, `scripts/prepare-production.mjs` checks `DATABASE_URL`, a unique `AUTH_SECRET` of at least 32 characters, and an HTTPS `APP_URL` origin before applying the reviewed additive SQL. It uses a transaction, an advisory lock, lock/statement timeouts, and existence checks so concurrent/repeated builds are safe. It does not run seed, reset or generic schema synchronization. A preparation failure stops the new build.
 
-   ```sh
-   npm ci
-   npm run db:upgrade
-   ```
+Preview and local builds skip database preparation. Configure preview deployments with their own upgraded database; previews never mutate a shared database through the build script. Take a database backup using your existing administration tools before a first production rollout. All previously issued login sessions are invalidated once after deployment; users sign in again.
 
-   This adds session versions, watchlists, persistent attempt counters, completion flags and subtitle/HLS settings. It does not remove existing content, payments or users. The repository previously used `db push` and has no migration baseline; do not run `migrate reset` against an existing database. For a brand-new database, use `npm run db:push` instead.
-4. Build and deploy the branch after the database update. All previously issued login sessions are invalidated once; users sign in again. Future password changes and resets invalidate other sessions, keeping the device completing the change signed in.
-5. Test a sandbox payment with the configured provider and verify playback from the actual storage provider before promoting the deployment.
+For an existing database deployed outside Vercel, apply the same repeatable update manually before publishing:
 
-No production database or provider credentials were available in the implementation workspace. The production database and deployed site were not changed.
+```sh
+npm ci
+npm run db:upgrade
+npm run build
+```
+
+This adds session versions, watchlists, persistent attempt counters, completion flags and subtitle/HLS settings. It does not remove existing content, payments or users, and tolerates a database already updated by `db push`. The repository has no migration baseline: do not run `migrate reset` against an existing database. For a brand-new database use `npm run db:push` first. Test a sandbox payment and actual media delivery after rollout.
+
+No production credentials are downloaded into the implementation workspace. Vercel uses the project's configured production environment when it builds the merged branch.
 
 Production builds explicitly use Webpack because the existing favicon’s embedded PNG format is rejected by Turbopack. The existing icon is preserved.
 
@@ -62,3 +63,9 @@ npm run test:integration
 The database update was tested by creating the original schema in a fresh Postgres 16 database, applying the SQL, and testing the upgraded code. Integration tests cover session revocation, password-reset reuse, concurrent attempt limits, duplicate captures, payment rollback/retry, activation codes, manual approvals, watchlist ownership and progress validation. PayPal and email transport are mocked; the database, transactions, token signing and password hashing are real. Tests do not charge cards or send email.
 
 Implementation validation: 14 tests passed against the isolated Postgres database, type checking passed, production Webpack build passed, and lint passed with existing warnings (fonts/navigation and redundant image-rule suppressions). HTTP smoke checks passed for public pages in English/Arabic, authenticated My list/title/watch pages, resume/completion visibility, stream HEAD authorization and revoked-session redirects. Browser visual review and real provider/media delivery remain unverified.
+
+## Master integration
+
+The repository contained only `master` and `codex/security-library-20261025` at integration time. The feature branch descends from the current master and includes its latest episode/media changes. The merge retains those existing files. Vercel inspection established that the failed preview used the dashboard's old build override; the repository build command now enforces the tested Webpack build.
+
+Master integration validation: 19 tests passed, including repeatable production schema preparation, preservation of existing rows and saved lists, rollback on partial failure, and no schema writes during preview preparation. Type checking and lint passed. The full production-build path was exercised against the isolated test database. Existing media files and seed content are unchanged from master.
