@@ -35,6 +35,23 @@ model User {
   supports           Support[]
   payments           PaymentRequest[]
   watchlist          Watchlist[]
+  communityPosts     CommunityPost[]
+}
+
+model CommunityPost {
+  id        String   @id @default(cuid())
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Restrict)
+  title     String
+  body      String
+  category  String   @default("updates")
+  published Boolean  @default(false)
+  pinned    Boolean  @default(false)
+  version   Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([published, pinned, createdAt])
 }
 
 // دفعات الدعم لمرة واحدة؛ المعرّف هو رقم معاملة Paddle فلا تُحتسب الدفعة مرتين عند إعادة إرسال الإشعار

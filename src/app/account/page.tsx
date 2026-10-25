@@ -137,6 +137,7 @@ export default async function Account({ searchParams: searchParamsPromise }: { s
           </div>
         </div>}
         <div className="relative mt-5 flex flex-wrap gap-2">
+          <Link href="/community" className="btn-ghost py-2 text-sm"><ChatIcon className="h-4 w-4" />{t("community.nav")}</Link>
           <Link href="/my-list" className="btn-ghost py-2 text-sm">{t("list.title")}</Link>
           {user.role === "ADMIN" && <Link href="/admin" className="inline-flex items-center gap-2 rounded-lg border border-amber-300/30 bg-amber-300/10 px-4 py-2 text-sm font-semibold text-amber-200"><ShieldIcon className="h-4 w-4" />{t("nav.admin")}</Link>}
         </div>

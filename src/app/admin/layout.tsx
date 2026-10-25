@@ -8,6 +8,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   return (
     <div className="mx-auto max-w-6xl px-4 py-10">
       <nav className="mb-8 flex flex-wrap gap-3 border-b border-white/10 pb-4 text-sm">
+        <Link href="/community?view=manage" className="btn-ghost py-1.5">{t("community.manage")}</Link>
         <Link href="/admin" className="btn-ghost py-1.5">{t("admin.content")}</Link>
         <Link href="/admin/new" className="btn-ghost py-1.5">{t("admin.add")}</Link>
         <Link href="/admin/users" className="btn-ghost py-1.5">{t("admin.users")}</Link>

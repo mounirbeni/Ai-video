@@ -26,7 +26,7 @@ export function prepareProduction(env = process.env) {
   validateProductionEnvironment(env);
   const root = fileURLToPath(new URL("../", import.meta.url));
   // Only the reviewed additive SQL is applied. No db push, reset, seed or content writes.
-  for (const update of ["20261025-security-library.sql", "20261025-profile-avatars.sql"]) {
+  for (const update of ["20261025-security-library.sql", "20261025-profile-avatars.sql", "20261025-community.sql"]) {
     const result = spawnSync(process.execPath, [
       resolve(root, "node_modules/prisma/build/index.js"), "db", "execute",
       "--file", resolve(root, "prisma/updates", update),
