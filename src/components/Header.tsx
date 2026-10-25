@@ -5,9 +5,13 @@ import { logout } from "@/app/actions/auth";
 import { getT } from "@/lib/i18n/server";
 import UserAvatar from "./UserAvatar";
 import LangSwitch from "./LangSwitch";
+import { getAccountIdentity } from "@/lib/account-identity";
+import { identityLabelKey } from "@/lib/identity";
+import IdentityBadge from "./IdentityBadge";
 
 export default async function Header() {
   const user = await getUser();
+  const identity = getAccountIdentity(user);
   const t = (await getT());
   return (
     <header className="sticky top-0 z-40 border-b border-white/5 bg-neutral-950/80 backdrop-blur" style={{ paddingTop: "env(safe-area-inset-top)" }}>
@@ -36,7 +40,7 @@ export default async function Header() {
             <>
               {user.role === "ADMIN" && <Link href="/admin" className="btn-ghost px-3 py-1.5 text-sm sm:px-5 sm:text-base">{t("nav.admin")}</Link>}
               {!isSubscribed(user) && <Link href="/pricing" className="btn-primary px-3 py-1.5 text-sm sm:px-5 sm:text-base">{t("pricing.subscribe")}</Link>}
-              <Link href="/account" aria-label={`${t("nav.account")} · ${user.name}`} className="hidden items-center gap-2 rounded-full hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand sm:flex"><UserAvatar role={user.role} avatarId={user.avatarId} name={user.username || user.name} decorative className="h-8 w-8 text-xs" /><span className="hidden max-w-24 truncate xl:inline">{user.name}</span></Link>
+              <Link href="/account" aria-label={`${t("nav.account")} · ${user.name}${identity ? ` · ${t(identityLabelKey(identity))}` : ""}`} className={`hidden items-center gap-2 rounded-full hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand sm:flex ${identity ? "border border-white/10 bg-white/[.04] p-1 pe-2" : ""}`}><UserAvatar role={user.role} identity={identity} avatarId={user.avatarId} name={user.username || user.name} decorative className="h-8 w-8 text-xs" /><span className="hidden max-w-24 truncate xl:inline">{user.name}</span>{identity && <IdentityBadge identity={identity} label={t(identityLabelKey(identity))} compact />}</Link>
               <form action={logout} className="hidden sm:block">
                 <button className="text-neutral-400 hover:text-white">{t("nav.logout")}</button>
               </form>

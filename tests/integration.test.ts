@@ -14,7 +14,7 @@ vi.mock("../src/lib/paypal", () => ({
 vi.mock("../src/lib/mail", () => ({ sendMail: vi.fn(async () => {}), mailConfigured: false }));
 
 import { db } from "../src/lib/db";
-import { createSession, getUser } from "../src/lib/auth";
+import { createSession, getUser, isSubscribed, requireAdmin } from "../src/lib/auth";
 import { changePassword, resetPassword } from "../src/app/actions/auth";
 import { issueToken } from "../src/lib/tokens";
 import { consumeLimit } from "../src/lib/rate-limit";
@@ -122,6 +122,31 @@ describe.skipIf(!enabled)("Postgres account, payment and library flows", () => {
     state.cookies.clear();
     const form = new FormData(); form.set("avatarId", "ember");
     await expect(updateAvatar(undefined, form)).rejects.toThrow("REDIRECT:/login");
+  });
+
+  it("requires the verified developer email for the exclusive portrait without granting admin or paid access", async () => {
+    const form = new FormData(); form.set("avatarId", "architect"); form.set("identity", "developer"); form.set("email", "mobanunir@gmail.com");
+    expect(await updateAvatar(undefined, form)).toHaveProperty("error");
+    try {
+      await db.user.update({ where: { id: state.userId }, data: { email: "mobanunir@gmail.com" } });
+      expect(await updateAvatar(undefined, form)).toHaveProperty("error");
+      await db.user.update({ where: { id: state.userId }, data: { emailVerified: new Date() } });
+      expect(await updateAvatar(undefined, form)).toHaveProperty("ok");
+      const user = await getUser();
+      expect(user?.avatarId).toBe("architect");
+      expect(user?.role).toBe("USER");
+      expect(isSubscribed(user)).toBe(false);
+      await expect(requireAdmin()).rejects.toThrow("REDIRECT:/login?next=/admin");
+      form.set("avatarId", "initials");
+      expect(await updateAvatar(undefined, form)).toHaveProperty("ok");
+      expect((await getUser())?.avatarId).toBe("initials");
+      await db.user.update({ where: { id: state.userId }, data: { emailVerified: null, avatarId: "ember" } });
+      form.set("avatarId", "architect");
+      expect(await updateAvatar(undefined, form)).toHaveProperty("error");
+      expect((await getUser())?.avatarId).toBe("ember");
+    } finally {
+      await db.user.update({ where: { id: state.userId }, data: { email: "viewer@nexora.test" } });
+    }
   });
 
   const captureRequest = () => new Request("http://localhost/api/paypal/capture", { method: "POST", body: JSON.stringify({ orderID: "ORDER123456" }), headers: { "Content-Type": "application/json" } });

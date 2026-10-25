@@ -1,3 +1,4 @@
+import { getAccountIdentity } from "@/lib/account-identity";
 import type { Metadata, Viewport } from "next";
 import { Suspense } from "react";
 import "./globals.css";
@@ -44,7 +45,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <Header />
           <main>{children}</main>
           <Suspense>
-            <BottomNav role={user?.role} avatarId={user?.avatarId ?? null} name={user?.username || user?.name || ""} />
+            <BottomNav role={user?.role} identity={getAccountIdentity(user)} avatarId={user?.avatarId ?? null} name={user?.username || user?.name || ""} />
           </Suspense>
           <InstallPrompt />
           <Footer />
