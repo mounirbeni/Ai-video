@@ -16,7 +16,7 @@ const ITEMS: { href: string; label: Key; icon: string; match: (path: string, typ
 ];
 
 // شريط تنقّل سفلي على الهاتف، مثل التطبيقات
-export default function BottomNav({ avatarId = null, name = "" }: { avatarId?: string | null; name?: string }) {
+export default function BottomNav({ avatarId = null, name = "", role = "USER" }: { avatarId?: string | null; name?: string; role?: string }) {
   const path = usePathname();
   const type = useSearchParams().get("type");
   const t = useT();
@@ -29,7 +29,7 @@ export default function BottomNav({ avatarId = null, name = "" }: { avatarId?: s
           return (
             <li key={it.label}>
               <Link href={it.href} aria-current={active ? "page" : undefined} className={`flex flex-col items-center gap-1 py-2 text-[11px] ${active ? "text-brand" : "text-neutral-400"}`}>
-                {it.href === "/account" && avatarId ? <UserAvatar avatarId={avatarId} name={name} decorative className="h-6 w-6" /> : <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round"><path d={it.icon} /></svg>}
+                {it.href === "/account" && avatarId ? <UserAvatar role={role} avatarId={avatarId} name={name} decorative className="h-6 w-6" /> : <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round"><path d={it.icon} /></svg>}
                 {t(it.label)}
               </Link>
             </li>

@@ -101,6 +101,18 @@ describe.skipIf(!enabled)("Postgres account, payment and library flows", () => {
     expect((await db.user.findUniqueOrThrow({ where: { id: state.userId } })).avatarId).toBeNull();
   });
 
+  it("uses the authenticated database role for the admin-only avatar", async () => {
+    const form = new FormData(); form.set("avatarId", "sovereign"); form.set("role", "ADMIN");
+    expect(await updateAvatar(undefined, form)).toHaveProperty("error");
+    expect((await db.user.findUniqueOrThrow({ where: { id: state.userId } })).avatarId).toBeNull();
+    await db.user.update({ where: { id: state.userId }, data: { role: "ADMIN" } });
+    expect(await updateAvatar(undefined, form)).toHaveProperty("ok");
+    expect((await db.user.findUniqueOrThrow({ where: { id: state.userId } })).avatarId).toBe("sovereign");
+    await db.user.update({ where: { id: state.userId }, data: { role: "USER", avatarId: "ember" } });
+    expect(await updateAvatar(undefined, form)).toHaveProperty("error");
+    expect((await db.user.findUniqueOrThrow({ where: { id: state.userId } })).avatarId).toBe("ember");
+  });
+
   it("rejects arbitrary avatar identifiers and unauthenticated avatar changes", async () => {
     for (const value of ["https://example.com/avatar.png", "unknown", "", "__proto__"]) {
       const form = new FormData(); form.set("avatarId", value);

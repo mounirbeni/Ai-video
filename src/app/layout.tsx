@@ -44,7 +44,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <Header />
           <main>{children}</main>
           <Suspense>
-            <BottomNav avatarId={user?.avatarId ?? null} name={user?.username || user?.name || ""} />
+            <BottomNav role={user?.role} avatarId={user?.avatarId ?? null} name={user?.username || user?.name || ""} />
           </Suspense>
           <InstallPrompt />
           <Footer />

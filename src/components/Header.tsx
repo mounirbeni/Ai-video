@@ -36,7 +36,7 @@ export default async function Header() {
             <>
               {user.role === "ADMIN" && <Link href="/admin" className="btn-ghost px-3 py-1.5 text-sm sm:px-5 sm:text-base">{t("nav.admin")}</Link>}
               {!isSubscribed(user) && <Link href="/pricing" className="btn-primary px-3 py-1.5 text-sm sm:px-5 sm:text-base">{t("pricing.subscribe")}</Link>}
-              <Link href="/account" aria-label={`${t("nav.account")} · ${user.name}`} className="hidden items-center gap-2 rounded-full hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand sm:flex"><UserAvatar avatarId={user.avatarId} name={user.username || user.name} decorative className="h-8 w-8 text-xs" /><span className="hidden max-w-24 truncate xl:inline">{user.name}</span></Link>
+              <Link href="/account" aria-label={`${t("nav.account")} · ${user.name}`} className="hidden items-center gap-2 rounded-full hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand sm:flex"><UserAvatar role={user.role} avatarId={user.avatarId} name={user.username || user.name} decorative className="h-8 w-8 text-xs" /><span className="hidden max-w-24 truncate xl:inline">{user.name}</span></Link>
               <form action={logout} className="hidden sm:block">
                 <button className="text-neutral-400 hover:text-white">{t("nav.logout")}</button>
               </form>

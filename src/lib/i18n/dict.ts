@@ -21,6 +21,8 @@ export const en = {
   "avatar.pixel": "Pixel · Gamer",
   "avatar.sol": "Sol · Lion",
   "avatar.vela": "Vela · Alien",
+  "avatar.sovereign": "Sovereign · Admin",
+  "avatar.adminExclusive": "Exclusive to admins: Sovereign, the crowned guardian.",
 
   "home.spotlight": "IN THE SPOTLIGHT",
   "home.nowStreaming": "Now streaming",
@@ -471,6 +473,8 @@ export const ar: Dict = {
   "avatar.pixel": "بيكسل · لاعب",
   "avatar.sol": "سول · أسد",
   "avatar.vela": "فيلا · كائن فضائي",
+  "avatar.sovereign": "سوفرين · المشرف",
+  "avatar.adminExclusive": "حصري للمشرفين: سوفرين، الحارس المتوج.",
 
   "home.spotlight": "في الواجهة",
   "home.nowStreaming": "متاح للمشاهدة",
