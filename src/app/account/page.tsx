@@ -14,6 +14,9 @@ import { contactEmail } from "@/lib/contact";
 import AvatarPicker from "@/components/AvatarPicker";
 import UserAvatar from "@/components/UserAvatar";
 import SimpleForm from "@/components/SimpleForm";
+import { getAccountIdentity } from "@/lib/account-identity";
+import { identityLabelKey } from "@/lib/identity";
+import IdentityBadge, { IdentityMark } from "@/components/IdentityBadge";
 import {
   ArrowNextIcon, CardIcon, ChatIcon, DocIcon, FilmIcon, GiftIcon, GlobeIcon, HeartIcon, KeyIcon, LogoutIcon,
   MailIcon, PlayIcon, ScreenIcon, ShieldIcon, SparkleIcon, UserIcon,
@@ -36,6 +39,7 @@ export default async function Account({ searchParams: searchParamsPromise }: { s
   const searchParams = await searchParamsPromise;
 
   const user = await requireUser("/account");
+  const identity = getAccountIdentity(user);
   const sub = isSubscribed(user);
   const plan = user.subscriptionPlan ? PLANS[user.subscriptionPlan as PlanId] : null;
   const t = (await getT());
@@ -91,15 +95,18 @@ export default async function Account({ searchParams: searchParamsPromise }: { s
       )}
 
       {/* الملف الشخصي */}
-      <section className="card relative overflow-hidden">
+      <section data-profile-identity={identity || undefined} className={`card relative overflow-hidden ${identity === "admin" ? "border-amber-300/35 bg-gradient-to-br from-amber-950/50 via-neutral-950 to-violet-950/40 shadow-[0_16px_80px_-40px_rgba(245,158,11,.6)]" : identity === "developer" ? "border-cyan-300/35 bg-gradient-to-br from-cyan-950/60 via-neutral-950 to-violet-950/60 shadow-[0_16px_80px_-40px_rgba(34,211,238,.6)]" : ""}`}>
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(30rem_10rem_at_0%_0%,rgba(124,92,255,.22),transparent)]" />
-        <div className="relative flex items-center gap-4">
+        {identity && <div className="relative mb-7 flex flex-wrap items-center justify-between gap-3">
+          <p className={`text-[10px] font-bold tracking-[.24em] ${identity === "admin" ? "text-amber-200/70" : "text-cyan-200/70"}`}>{t("identity.team")}</p>
+          <IdentityBadge identity={identity} label={t(identityLabelKey(identity))} />
+        </div>}
+        <div className="relative flex items-center gap-4 sm:gap-6">
           <a href="#avatar-settings" className="rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand" aria-label={t("avatar.choose")}>
-            <UserAvatar role={user.role} avatarId={user.avatarId} name={user.username || user.name} decorative className="h-16 w-16 text-2xl shadow-[0_0_24px_-6px_rgba(124,92,255,.5)]" />
+            <UserAvatar role={user.role} identity={identity} avatarId={user.avatarId} name={user.username || user.name} decorative className={identity ? "h-20 w-20 text-3xl sm:h-28 sm:w-28" : "h-16 w-16 text-2xl"} />
           </a>
           <div className="min-w-0">
-            <Link href="/my-list" className="btn-ghost mb-4">{t("list.title")}</Link>
-            <h1 className="truncate text-2xl font-bold">{user.name}</h1>
+            <h1 className={`truncate text-2xl font-bold ${identity === "admin" ? "text-amber-100 sm:text-3xl" : identity === "developer" ? "text-cyan-100 sm:text-3xl" : ""}`}>{user.name}</h1>
             {user.username && <p className="text-sm text-brand" dir="auto">@{user.username}</p>}
             <p className="truncate text-sm text-neutral-400" dir="ltr">{user.email}</p>
             <a href="#avatar-settings" className="mt-2 inline-block rounded text-xs font-semibold text-brand-cyan hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand">{t("avatar.change")}</a>
@@ -120,13 +127,22 @@ export default async function Account({ searchParams: searchParamsPromise }: { s
               <SparkleIcon className="h-3.5 w-3.5" />{t("account.supporter")}
             </span>
           )}
-          {user.role === "ADMIN" && (
-            <Link href="/admin" className="rounded-full bg-amber-500/15 px-3 py-1 text-amber-300 ring-1 ring-amber-500/30">{t("account.admin")}</Link>
-          )}
+        </div>
+        {identity && <div className="relative mt-6 border-t border-white/10 pt-5">
+          <div className={`pointer-events-none absolute -end-4 top-2 opacity-[.06] ${identity === "admin" ? "text-amber-200" : "text-cyan-200"}`}><IdentityMark identity={identity} className="h-32 w-32" /></div>
+          <h2 className="relative text-lg font-bold">{t(identity === "admin" ? "identity.adminTitle" : "identity.developerTitle")}</h2>
+          <p className="relative mt-2 max-w-lg text-sm leading-7 text-neutral-300">{t(identity === "admin" ? "identity.adminDescription" : "identity.developerDescription")}</p>
+          <div className={`relative mt-4 flex flex-wrap gap-x-4 gap-y-2 text-xs ${identity === "admin" ? "text-amber-200" : "text-cyan-200"}`}>
+            {(["identity.signatureAvatar", "identity.officialBadge", "identity.customProfile"] as const).map((key) => <span key={key} className="inline-flex items-center gap-1.5"><SparkleIcon className="h-3 w-3" />{t(key)}</span>)}
+          </div>
+        </div>}
+        <div className="relative mt-5 flex flex-wrap gap-2">
+          <Link href="/my-list" className="btn-ghost py-2 text-sm">{t("list.title")}</Link>
+          {user.role === "ADMIN" && <Link href="/admin" className="inline-flex items-center gap-2 rounded-lg border border-amber-300/30 bg-amber-300/10 px-4 py-2 text-sm font-semibold text-amber-200"><ShieldIcon className="h-4 w-4" />{t("nav.admin")}</Link>}
         </div>
       </section>
 
-      <section id="avatar-settings" className="card mt-6 scroll-mt-24"><AvatarPicker role={user.role} currentAvatarId={user.avatarId} name={user.username || user.name} /></section>
+      <section id="avatar-settings" className="card mt-6 scroll-mt-24"><AvatarPicker role={user.role} identity={identity} currentAvatarId={user.avatarId} name={user.username || user.name} /></section>
 
       {/* إحصاءات */}
       <div className="mt-6 grid grid-cols-3 gap-3">

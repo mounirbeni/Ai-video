@@ -5,6 +5,7 @@ import { AVATARS, getAvatar } from "../src/lib/avatars";
 import AvatarPicker from "../src/components/AvatarPicker";
 import UserAvatar from "../src/components/UserAvatar";
 import { I18nProvider } from "../src/lib/i18n/client";
+import IdentityBadge from "../src/components/IdentityBadge";
 
 vi.mock("../src/app/actions/avatar", () => ({ updateAvatar: vi.fn() }));
 afterEach(cleanup);
@@ -53,6 +54,35 @@ it("renders a saved admin portrait only while the account has the admin role", (
 it("localizes the admin choice in Arabic", () => {
   render(<I18nProvider locale="ar"><AvatarPicker currentAvatarId="sovereign" role="ADMIN" name="مشرف" /></I18nProvider>);
   expect((screen.getByRole("radio", { name: "سوفرين · المشرف" }) as HTMLInputElement).checked).toBe(true);
+});
+
+it("automatically previews the signature portrait for special accounts with no saved choice", () => {
+  const { unmount } = render(<AvatarPicker currentAvatarId={null} role="ADMIN" identity="admin" name="Admin" />);
+  expect((screen.getByRole("radio", { name: "Sovereign · Admin" }) as HTMLInputElement).checked).toBe(true);
+  unmount();
+  render(<I18nProvider locale="ar"><AvatarPicker currentAvatarId={null} identity="developer" name="المطور" /></I18nProvider>);
+  expect((screen.getByRole("radio", { name: "أركيتكت · المطور" }) as HTMLInputElement).checked).toBe(true);
+  expect(screen.queryByRole("radio", { name: "سوفرين · المشرف" })).toBeNull();
+  fireEvent.click(screen.getByRole("radio", { name: "استخدم الحرف الأول من اسمي" }));
+  expect(screen.getByRole("img", { name: "الحرف الأول من اسمك" }).textContent).toBe("ا");
+});
+
+it("keeps identity frames on ordinary avatars and explicit initials without unlocking another identity's portrait", () => {
+  const { rerender } = render(<UserAvatar avatarId="ember" identity="developer" name="Developer" />);
+  expect(screen.getByRole("img").style.backgroundImage).toContain("nexora-atlas.webp");
+  expect(screen.getByRole("img").dataset.avatarIdentity).toBe("developer");
+  expect(screen.getByRole("img").style.boxShadow).toContain("#67e8f9");
+  rerender(<UserAvatar avatarId="initials" identity="developer" name="Developer" />);
+  expect(screen.getByRole("img").textContent).toBe("D");
+  rerender(<UserAvatar avatarId="architect" name="Viewer" />);
+  expect(screen.getByRole("img").style.backgroundImage).toBe("");
+});
+
+it("keeps compact identity badges accessible and absent on ordinary accounts", () => {
+  const { rerender } = render(<IdentityBadge identity="developer" label="مطور الموقع" compact />);
+  expect(screen.getByText("مطور الموقع")).toBeTruthy();
+  rerender(<IdentityBadge identity={null} label="مطور الموقع" />);
+  expect(screen.queryByText("مطور الموقع")).toBeNull();
 });
 
 it("falls back to initials for a missing or invalid preset instead of loading a user-provided URL", () => {

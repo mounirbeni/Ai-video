@@ -1,3 +1,5 @@
+import type { AccountIdentity } from "./identity";
+
 export const AVATARS = [
   { id: "orbit", key: "avatar.orbit", column: 0, row: 0 },
   { id: "nova", key: "avatar.nova", column: 1, row: 0 },
@@ -12,8 +14,13 @@ export const AVATARS = [
 ] as const;
 
 export const ADMIN_AVATAR = { id: "sovereign", key: "avatar.sovereign", image: "/avatars/admin-sovereign.webp" } as const;
-export type AvatarId = (typeof AVATARS)[number]["id"] | typeof ADMIN_AVATAR.id;
+export const DEVELOPER_AVATAR = { id: "architect", key: "avatar.architect", image: "/avatars/developer-architect.webp" } as const;
+export type AvatarId = (typeof AVATARS)[number]["id"] | typeof ADMIN_AVATAR.id | typeof DEVELOPER_AVATAR.id;
 export const AVATAR_ATLAS = "/avatars/nexora-atlas.webp";
-export const getAvailableAvatars = (role = "USER") => role === "ADMIN" ? [...AVATARS, ADMIN_AVATAR] : [...AVATARS];
-export const getAvatar = (id: string | null | undefined, role = "USER") => getAvailableAvatars(role).find((a) => a.id === id);
-export const isAvatarId = (value: unknown, role = "USER"): value is AvatarId => typeof value === "string" && !!getAvatar(value, role);
+export const getAvailableAvatars = (role = "USER", identity: AccountIdentity = null) => [
+  ...AVATARS, ...(role === "ADMIN" ? [ADMIN_AVATAR] : []), ...(identity === "developer" ? [DEVELOPER_AVATAR] : []),
+];
+export const getAvatar = (id: string | null | undefined, role = "USER", identity: AccountIdentity = null) => getAvailableAvatars(role, identity).find((a) => a.id === id);
+export const isAvatarId = (value: unknown, role = "USER", identity: AccountIdentity = null): value is AvatarId => typeof value === "string" && !!getAvatar(value, role, identity);
+export const getDisplayAvatarId = (id: string | null | undefined, role = "USER", identity: AccountIdentity = null) =>
+  id ?? (identity === "developer" ? DEVELOPER_AVATAR.id : role === "ADMIN" ? ADMIN_AVATAR.id : null);
