@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { getUser } from "@/lib/auth";
 import BottomNav from "@/components/BottomNav";
 import InstallPrompt from "@/components/InstallPrompt";
 import { I18nProvider } from "@/lib/i18n/client";
@@ -28,7 +29,7 @@ export const viewport: Viewport = {
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const t = (await getT());
+  const [t, user] = await Promise.all([getT(), getUser()]);
   return (
     <html lang={t.locale} dir={t.dir}>
       <head>
@@ -43,7 +44,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <Header />
           <main>{children}</main>
           <Suspense>
-            <BottomNav />
+            <BottomNav avatarId={user?.avatarId ?? null} name={user?.username || user?.name || ""} />
           </Suspense>
           <InstallPrompt />
           <Footer />

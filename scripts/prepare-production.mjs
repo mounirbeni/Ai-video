@@ -26,14 +26,16 @@ export function prepareProduction(env = process.env) {
   validateProductionEnvironment(env);
   const root = fileURLToPath(new URL("../", import.meta.url));
   // Only the reviewed additive SQL is applied. No db push, reset, seed or content writes.
-  const result = spawnSync(process.execPath, [
-    resolve(root, "node_modules/prisma/build/index.js"), "db", "execute",
-    "--file", resolve(root, "prisma/updates/20261025-security-library.sql"),
-    "--schema", resolve(root, "prisma/schema.prisma"),
-  ], { cwd: root, env, encoding: "utf8", timeout: 120000 });
-  if (result.error || result.status !== 0) {
-    // Do not expose datasource credentials in a failed CLI diagnostic.
-    throw new Error("Production database preparation failed; the new build was stopped. Check database connectivity, permissions and the additive SQL update.");
+  for (const update of ["20261025-security-library.sql", "20261025-profile-avatars.sql"]) {
+    const result = spawnSync(process.execPath, [
+      resolve(root, "node_modules/prisma/build/index.js"), "db", "execute",
+      "--file", resolve(root, "prisma/updates", update),
+      "--schema", resolve(root, "prisma/schema.prisma"),
+    ], { cwd: root, env, encoding: "utf8", timeout: 120000 });
+    if (result.error || result.status !== 0) {
+      // Do not expose datasource credentials in a failed CLI diagnostic.
+      throw new Error("Production database preparation failed; the new build was stopped. Check database connectivity, permissions and the additive SQL update.");
+    }
   }
   console.log("Production database preparation completed.");
 }

@@ -14,6 +14,7 @@ model User {
   email              String           @unique
   username           String?          @unique // يظهر كعلامة مائية على الفيديو
   name               String
+  avatarId           String? // Preset avatar ID; null keeps initials
   passwordHash       String
   sessionVersion     Int              @default(0)
   role               String           @default("USER") // USER | ADMIN
