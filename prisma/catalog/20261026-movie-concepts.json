@@ -1,0 +1,62 @@
+[
+  {
+    "slug": "neon-harbor",
+    "name": "Neon Harbor",
+    "nameAr": "ميناء النيون",
+    "description": "An original film concept proposed for Nexora. A courier in a futuristic Casablanca discovers that a mysterious package carries the key to a citywide secret. Coming soon; no release date has been announced.",
+    "descriptionAr": "فكرة فيلم أصلية مقترحة لنكسورا. تكتشف سائقة توصيل في دار بيضاء مستقبلية أن طردًا غامضًا يحمل مفتاح سر يهدد المدينة. قريبًا؛ لم يُحدد موعد عرض.",
+    "genres": "Sci-Fi, Thriller",
+    "genresAr": "خيال علمي، تشويق",
+    "posterUrl": "/media/movies/neon-harbor.webp"
+  },
+  {
+    "slug": "atlas-at-dawn",
+    "name": "Atlas at Dawn",
+    "nameAr": "فجر الأطلس",
+    "description": "An original film concept proposed for Nexora. Two estranged siblings follow a forgotten mountain trail toward a remote refuge, confronting their past as dawn breaks over the Atlas. Coming soon; no release date has been announced.",
+    "descriptionAr": "فكرة فيلم أصلية مقترحة لنكسورا. يتبع شقيقان فرّقتهما السنوات دربًا جبليًا منسيًا نحو ملجأ بعيد، ويواجهان ماضيهما مع بزوغ الفجر فوق الأطلس. قريبًا؛ لم يُحدد موعد عرض.",
+    "genres": "Adventure, Drama",
+    "genresAr": "مغامرة، دراما",
+    "posterUrl": "/media/movies/atlas-at-dawn.webp"
+  },
+  {
+    "slug": "the-last-lantern",
+    "name": "The Last Lantern",
+    "nameAr": "الفانوس الأخير",
+    "description": "An original film concept proposed for Nexora. An artisan in the old city of Fez inherits a lantern whose light reveals paths that disappear before sunrise. Coming soon; no release date has been announced.",
+    "descriptionAr": "فكرة فيلم أصلية مقترحة لنكسورا. يرث حرفي في مدينة فاس العتيقة فانوسًا يكشف ضوؤه طرقًا تختفي قبل شروق الشمس. قريبًا؛ لم يُحدد موعد عرض.",
+    "genres": "Fantasy, Mystery",
+    "genresAr": "فانتازيا، غموض",
+    "posterUrl": "/media/movies/the-last-lantern.webp"
+  },
+  {
+    "slug": "letters-to-the-sea",
+    "name": "Letters to the Sea",
+    "nameAr": "رسائل إلى البحر",
+    "description": "An original film concept proposed for Nexora. In Essaouira, an artist finds a collection of unsent letters and follows their story toward an unexpected second chance. Coming soon; no release date has been announced.",
+    "descriptionAr": "فكرة فيلم أصلية مقترحة لنكسورا. تعثر فنانة في الصويرة على رسائل لم تُرسل، وتتبع حكايتها نحو فرصة ثانية غير متوقعة. قريبًا؛ لم يُحدد موعد عرض.",
+    "genres": "Romance, Drama",
+    "genresAr": "رومانسي، دراما",
+    "posterUrl": "/media/movies/letters-to-the-sea.webp"
+  },
+  {
+    "slug": "midnight-delivery",
+    "name": "Midnight Delivery",
+    "nameAr": "توصيل منتصف الليل",
+    "description": "An original film concept proposed for Nexora. One oversized package turns a bicycle courier's final delivery into a chaotic night through Marrakesh's markets and hidden alleys. Coming soon; no release date has been announced.",
+    "descriptionAr": "فكرة فيلم أصلية مقترحة لنكسورا. يحوّل طرد ضخم آخر طلب توصيل لسائق دراجة إلى ليلة مليئة بالمواقف الطريفة في أسواق مراكش وأزقتها الخفية. قريبًا؛ لم يُحدد موعد عرض.",
+    "genres": "Comedy, Adventure",
+    "genresAr": "كوميديا، مغامرة",
+    "posterUrl": "/media/movies/midnight-delivery.webp"
+  },
+  {
+    "slug": "the-glass-observatory",
+    "name": "The Glass Observatory",
+    "nameAr": "المرصد الزجاجي",
+    "description": "An original film concept proposed for Nexora. A young astronomer at a remote desert observatory sees a sky that no longer matches the universe she knows. Coming soon; no release date has been announced.",
+    "descriptionAr": "فكرة فيلم أصلية مقترحة لنكسورا. تكتشف عالمة فلك شابة في مرصد صحراوي بعيد سماءً لم تعد تشبه الكون الذي تعرفه. قريبًا؛ لم يُحدد موعد عرض.",
+    "genres": "Sci-Fi, Adventure",
+    "genresAr": "خيال علمي، مغامرة",
+    "posterUrl": "/media/movies/the-glass-observatory.webp"
+  }
+]

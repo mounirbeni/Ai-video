@@ -28,7 +28,16 @@ describe.skipIf(!enabled)("production additive SQL", () => {
     const url = new URL(process.env.TEST_DATABASE_URL!); url.searchParams.set("schema", schema);
     const db = new PrismaClient({ datasourceUrl: url.href }); clients.push(db);
     await db.$executeRawUnsafe('CREATE TABLE "User" ("id" TEXT PRIMARY KEY, "email" TEXT NOT NULL)');
-    await db.$executeRawUnsafe('CREATE TABLE "Title" ("id" TEXT PRIMARY KEY, "name" TEXT NOT NULL)');
+    await db.$executeRawUnsafe(`CREATE TABLE "Title" (
+      "id" TEXT PRIMARY KEY, "name" TEXT NOT NULL, "slug" TEXT UNIQUE,
+      "type" TEXT NOT NULL DEFAULT 'MOVIE', "description" TEXT NOT NULL DEFAULT '',
+      "nameAr" TEXT, "descriptionAr" TEXT, "genres" TEXT NOT NULL DEFAULT '', "genresAr" TEXT,
+      "posterUrl" TEXT, "releaseLabel" TEXT, "releaseLabelAr" TEXT,
+      "comingSoon" BOOLEAN NOT NULL DEFAULT false, "published" BOOLEAN NOT NULL DEFAULT true,
+      "isFree" BOOLEAN NOT NULL DEFAULT false, "featured" BOOLEAN NOT NULL DEFAULT false,
+      "videoSrc" TEXT, "trailerUrl" TEXT, "year" INTEGER, "duration" INTEGER
+    )`);
+    await db.$executeRawUnsafe('CREATE TABLE "Setting" ("key" TEXT PRIMARY KEY, "value" TEXT NOT NULL)');
     await db.$executeRawUnsafe('CREATE TABLE "Episode" ("id" TEXT PRIMARY KEY, "name" TEXT NOT NULL)');
     await db.$executeRawUnsafe('CREATE TABLE "WatchProgress" ("id" TEXT PRIMARY KEY, "seconds" DOUBLE PRECISION NOT NULL)');
     await db.$executeRawUnsafe(`INSERT INTO "User" VALUES ('viewer', 'kept@example.test')`);
@@ -50,6 +59,9 @@ describe.skipIf(!enabled)("production additive SQL", () => {
   it("preserves existing rows and saved lists when production preparation is repeated", async () => {
     const { db, url } = await fixture();
     expect(prepare(url).status).toBe(0);
+    const movies = await db.$queryRawUnsafe<{ type: string; comingSoon: boolean }[]>('SELECT "type", "comingSoon" FROM "Title" WHERE "id" LIKE \'nexora-concept-%\'');
+    expect(movies).toHaveLength(6);
+    expect(movies.every((m) => m.type === "MOVIE" && m.comingSoon)).toBe(true);
     expect(await db.$queryRawUnsafe('SELECT "avatarId" FROM "User"')).toEqual([{ avatarId: null }]);
     await db.$executeRawUnsafe(`UPDATE "User" SET "avatarId" = 'ember' WHERE "id" = 'viewer'`);
     await db.$executeRawUnsafe(`INSERT INTO "Watchlist" ("userId", "titleId") VALUES ('viewer', 'movie')`);
@@ -58,10 +70,25 @@ describe.skipIf(!enabled)("production additive SQL", () => {
     const users = await db.$queryRawUnsafe<{ email: string; sessionVersion: number }[]>('SELECT "email", "sessionVersion" FROM "User"');
     expect(users).toEqual([{ email: "kept@example.test", sessionVersion: 0 }]);
     expect(await db.$queryRawUnsafe('SELECT "avatarId" FROM "User"')).toEqual([{ avatarId: "ember" }]);
-    expect(await db.$queryRawUnsafe('SELECT "name", "streamFormat", "subtitles" FROM "Title"')).toEqual([{ name: "Existing movie", streamFormat: "file", subtitles: [] }]);
+    expect(await db.$queryRawUnsafe('SELECT "name", "streamFormat", "subtitles" FROM "Title" WHERE "id" = \'movie\'')).toEqual([{ name: "Existing movie", streamFormat: "file", subtitles: [] }]);
     expect(await db.$queryRawUnsafe('SELECT "seconds", "completed" FROM "WatchProgress"')).toEqual([{ seconds: 120, completed: false }]);
     expect(await db.$queryRawUnsafe('SELECT "userId", "titleId" FROM "Watchlist"')).toEqual([{ userId: "viewer", titleId: "movie" }]);
     expect(await db.$queryRawUnsafe('SELECT "title", "published", "version" FROM "CommunityPost"')).toEqual([{ title: "Existing draft", published: false, version: 0 }]);
+  }, 30000);
+  it("adds six non-playable movie proposals once and preserves later edits, deletions and conflicting series", async () => {
+    const { db, url } = await fixture();
+    await db.$executeRawUnsafe(`INSERT INTO "Title" ("id", "slug", "type", "name", "published") VALUES ('existing-series', 'neon-harbor', 'SERIES', 'Owner series', false)`);
+    expect(prepare(url).status).toBe(0);
+    const proposals = await db.$queryRawUnsafe<{ id: string; published: boolean; comingSoon: boolean; videoSrc: string | null; trailerUrl: string | null; year: number | null; duration: number | null }[]>('SELECT "id", "published", "comingSoon", "videoSrc", "trailerUrl", "year", "duration" FROM "Title" WHERE "id" LIKE \'nexora-concept-%\'');
+    expect(proposals).toHaveLength(5); // The conflicting owner-owned series is untouched.
+    for (const post of proposals) expect(post).toMatchObject({ published: true, comingSoon: true, videoSrc: null, trailerUrl: null, year: null, duration: null });
+    expect(await db.$queryRawUnsafe('SELECT "type", "name", "published" FROM "Title" WHERE "slug" = \'neon-harbor\'')).toEqual([{ type: "SERIES", name: "Owner series", published: false }]);
+    await db.$executeRawUnsafe(`UPDATE "Title" SET "name" = 'Owner edit', "published" = false WHERE "id" = 'nexora-concept-atlas-at-dawn'`);
+    await db.$executeRawUnsafe(`DELETE FROM "Title" WHERE "id" = 'nexora-concept-letters-to-the-sea'`);
+    expect(prepare(url).status).toBe(0);
+    expect(await db.$queryRawUnsafe('SELECT "name", "published" FROM "Title" WHERE "id" = \'nexora-concept-atlas-at-dawn\'')).toEqual([{ name: "Owner edit", published: false }]);
+    expect(await db.$queryRawUnsafe('SELECT "id" FROM "Title" WHERE "id" = \'nexora-concept-letters-to-the-sea\'')).toEqual([]);
+    expect(await db.$queryRawUnsafe('SELECT "value" FROM "Setting" WHERE "key" = \'catalog:20261026:movie-concepts\'')).toEqual([{ value: "applied" }]);
   }, 30000);
   it("makes no schema changes during a preview build", async () => {
     const { db, url } = await fixture();
