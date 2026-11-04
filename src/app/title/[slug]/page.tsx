@@ -31,13 +31,13 @@ export default async function TitlePage({ params: paramsPromise }: { params: Pro
     <div>
       <section className="relative">
         {(t.backdropUrl || t.posterUrl) && (
-          // eslint-disable-next-line @next/next/no-img-element
+           
           <img src={t.backdropUrl || t.posterUrl!} alt="" className="absolute inset-0 h-full w-full object-cover opacity-30" />
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 to-neutral-950/40" />
         <div className="relative mx-auto flex max-w-7xl flex-col gap-8 px-4 py-14 md:flex-row">
           {t.posterUrl && (
-            // eslint-disable-next-line @next/next/no-img-element
+             
             <img src={t.posterUrl} alt={t.name} className="w-36 shrink-0 self-start rounded-xl shadow-2xl sm:w-56" />
           )}
           <div className="max-w-2xl">
@@ -109,7 +109,7 @@ export default async function TitlePage({ params: paramsPromise }: { params: Pro
                     <Link key={e.id} href={`/watch/${t.slug}?ep=${e.id}`} className="flex items-center gap-4 p-4 hover:bg-white/5">
                       <span className="w-8 text-2xl font-bold text-neutral-500">{e.number}</span>
                       {e.thumbUrl && (
-                        // eslint-disable-next-line @next/next/no-img-element
+                         
                         <img src={e.thumbUrl} alt="" className="aspect-video w-28 shrink-0 rounded-md object-cover sm:w-40" />
                       )}
                       <div className="flex-1">

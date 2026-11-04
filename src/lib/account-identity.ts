@@ -1,10 +1,10 @@
 import type { AccountIdentity } from "./identity";
 
-// Resolve on the server from the authenticated database record, never form data.
-const DEVELOPER_EMAIL = "mobanunir@gmail.com";
-
+// The developer's email comes from server configuration (DEVELOPER_EMAIL), never from code or form data.
+// Resolve identity on the server from the authenticated database record.
 export function getAccountIdentity(user: { role: string; email: string; emailVerified: Date | null } | null): AccountIdentity {
   if (!user) return null;
-  if (user.emailVerified && user.email.trim().toLowerCase() === DEVELOPER_EMAIL) return "developer";
+  const developer = process.env.DEVELOPER_EMAIL?.trim().toLowerCase();
+  if (developer && user.emailVerified && user.email.trim().toLowerCase() === developer) return "developer";
   return user.role === "ADMIN" ? "admin" : null;
 }

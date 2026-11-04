@@ -18,3 +18,13 @@ it("derives admin identity from the existing role and leaves ordinary accounts u
   // An existing admin who is also the developer keeps their developer identity.
   expect(getAccountIdentity({ role: "ADMIN", email: "mobanunir@gmail.com", emailVerified: new Date() })).toBe("developer");
 });
+
+it("grants no developer identity when DEVELOPER_EMAIL is unset", () => {
+  const saved = process.env.DEVELOPER_EMAIL;
+  delete process.env.DEVELOPER_EMAIL;
+  try {
+    expect(getAccountIdentity({ role: "USER", email: "mobanunir@gmail.com", emailVerified: new Date() })).toBeNull();
+  } finally {
+    process.env.DEVELOPER_EMAIL = saved;
+  }
+});

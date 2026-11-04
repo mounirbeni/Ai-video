@@ -34,7 +34,7 @@ function Details({ text }: { text: string }) {
           const label = l.slice(0, l.indexOf(":")).trim();
           return (
             <div key={i} className="flex flex-col items-center gap-2 pb-2">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
+              { }
               <img src={value} alt={label} width={180} height={180} className="h-44 w-44 rounded-lg bg-white p-2" />
               <p className="text-center text-xs text-neutral-400">{label}</p>
               <a href={value} download className="btn-ghost py-1.5 text-sm">{t("pay.saveQr")}</a>

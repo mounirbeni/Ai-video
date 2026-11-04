@@ -10,6 +10,12 @@ if (!email || !password) {
   process.exit(1);
 }
 
+const WEAK = new Set(["admin12345", "password", "changeme", "12345678"]);
+if (WEAK.has(password.toLowerCase()) || password.length < 10) {
+  console.error("ADMIN_PASSWORD ضعيفة: استخدم 10 أحرف على الأقل وليست قيمة افتراضية");
+  process.exit(1);
+}
+
 const passwordHash = await bcrypt.hash(password, 10);
 await prisma.user.upsert({
   where: { email },

@@ -34,7 +34,13 @@ export async function GET(req: Request, { params: paramsPromise }: { params: Pro
     return new NextResponse("Too many devices are watching on this account", { status: 429 });
 
   // رابط خارجي (CDN/تخزين سحابي)
-  if (!src.startsWith("local:")) return NextResponse.redirect(src, 302);
+  if (!src.startsWith("local:")) {
+    // يُسمح بروابط HTTPS فقط؛ الرابط الخارجي غير موقّع من جهتنا، لذا يلزم تقييد الوصول عند المضيف نفسه
+    if (!/^https:\/\//i.test(src)) return new NextResponse("Not found", { status: 404 });
+    const res = NextResponse.redirect(src, 302);
+    res.headers.set("Cache-Control", "private, no-store");
+    return res;
+  }
 
   // تخزين Neon: رابط موقّع قصير العمر (يدعم Range أصلًا)
   // رابط قصير العمر؛ المشغّل يجدده تلقائيًا عند انتهائه

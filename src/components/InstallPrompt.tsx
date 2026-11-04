@@ -33,7 +33,7 @@ export default function InstallPrompt() {
 
   return (
     <div className="fixed inset-x-3 z-50 flex items-center gap-3 rounded-xl border border-white/10 bg-neutral-900 p-3 shadow-2xl sm:hidden" style={{ bottom: "calc(env(safe-area-inset-bottom) + 72px)" }}>
-      {/* eslint-disable-next-line @next/next/no-img-element */}
+      { }
       <img src="/icon-192.png" alt="" className="h-10 w-10 rounded-lg" />
       <p className="flex-1 text-sm">
         {evt ? t("install.prompt") : (() => { const [a, rest] = t("install.ios").split("{share}"); const [b, c] = rest.split("{add}"); return <>{a}<b>{t("install.share")}</b>{b}<b>{t("install.add")}</b>{c}</>; })()}

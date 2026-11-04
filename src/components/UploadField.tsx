@@ -82,7 +82,7 @@ export default function UploadField({
       {hint && <p className="mt-1 text-xs text-neutral-500">{hint}</p>}
       {err && <p className="mt-1 text-sm text-red-400">{err}</p>}
       {kind === "image" && value && (
-        // eslint-disable-next-line @next/next/no-img-element
+         
         <img src={value} alt="" className="mt-2 h-24 rounded object-cover" />
       )}
     </div>

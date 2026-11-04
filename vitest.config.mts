@@ -8,5 +8,5 @@ if (process.env.TEST_DATABASE_URL) {
 
 export default defineConfig({
   resolve: { alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) } },
-  test: { include: ["tests/**/*.test.ts", "tests/**/*.test.tsx"], fileParallelism: false },
+  test: { env: { DEVELOPER_EMAIL: "mobanunir@gmail.com" }, include: ["tests/**/*.test.ts", "tests/**/*.test.tsx"], fileParallelism: false },
 });

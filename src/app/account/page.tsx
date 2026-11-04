@@ -200,7 +200,7 @@ export default async function Account({ searchParams: searchParamsPromise }: { s
               <Link key={r.href} href={r.href} className="group w-28 shrink-0 sm:w-32">
                 <div className="relative aspect-[9/16] overflow-hidden rounded-lg bg-neutral-800">
                   {r.title.posterUrl && (
-                    // eslint-disable-next-line @next/next/no-img-element
+                     
                     <img src={r.title.posterUrl} alt={r.title.name} className="h-full w-full object-cover transition group-hover:scale-105" />
                   )}
                   <span className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 transition group-hover:opacity-100">

@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useT } from "@/lib/i18n/client";
 import { CheckCircleIcon } from "./Icons";
@@ -8,6 +9,7 @@ type PayPalSDK = { Buttons: (o: Record<string, unknown>) => { render: (el: HTMLE
 
 export default function PayPalButtons({ clientId, item, amount }: { clientId: string; item: string; amount?: string }) {
   const t = useT();
+  const router = useRouter();
   const box = useRef<HTMLDivElement>(null);
   const [state, setState] = useState<"loading" | "ready" | "done" | "error">("loading");
 
@@ -29,7 +31,7 @@ export default function PayPalButtons({ clientId, item, amount }: { clientId: st
           const r = await fetch("/api/paypal/capture", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ orderID: data.orderID }) });
           if (r.ok) {
             setState("done");
-            setTimeout(() => (window.location.href = "/account?success=1"), 1500);
+            setTimeout(() => router.push("/account?success=1"), 1500);
           } else setState("error");
         },
         onError: () => setState("error"),
@@ -52,7 +54,7 @@ export default function PayPalButtons({ clientId, item, amount }: { clientId: st
       document.body.appendChild(s);
     }
     return () => { cancelled = true; };
-  }, [clientId, item, amount]);
+  }, [clientId, item, amount, router]);
 
   if (state === "done") {
     return (
