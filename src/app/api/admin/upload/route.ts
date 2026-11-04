@@ -4,7 +4,7 @@ import { Readable } from "node:stream";
 import { pipeline } from "node:stream/promises";
 import { NextResponse } from "next/server";
 import { getUser } from "@/lib/auth";
-import { IMAGE_DIR, IMAGE_TYPES, VIDEO_DIR, VIDEO_TYPES, blob, objectKey, presignPut, remote, s3, safeName } from "@/lib/storage";
+import { IMAGE_DIR, IMAGE_TYPES, VIDEO_DIR, VIDEO_TYPES, objectKey, remote, safeName } from "@/lib/storage";
 
 function parse(req: Request) {
   const url = new URL(req.url);
@@ -16,7 +16,7 @@ function parse(req: Request) {
 
 const valueFor = (isVideo: boolean, name: string) => (isVideo ? `local:${name}` : `/api/media/${name}`);
 
-// تخزين Neon: رابط رفع موقّع يرفع إليه المتصفح مباشرة (يتجاوز حد حجم الطلب على الاستضافة)
+// Vercel Blob: يرفع المتصفح مباشرة إلى الحاوية (يتجاوز حد حجم الطلب على الاستضافة)
 export async function POST(req: Request) {
   const user = await getUser();
   if (user?.role !== "ADMIN") return NextResponse.json({ error: "forbidden" }, { status: 403 });
@@ -24,10 +24,8 @@ export async function POST(req: Request) {
   if (!type) return NextResponse.json({ error: "Unsupported file type" }, { status: 400 });
   const pathname = objectKey(isVideo ? "video" : "image", name);
   // Vercel Blob: يرفع المتصفح عبر @vercel/blob/client بعد أخذ رمز من /api/admin/blob-upload
-  if (blob) return NextResponse.json({ direct: "blob", pathname, contentType: type, value: valueFor(isVideo, name) });
-  if (!s3) return NextResponse.json({ direct: false });
-  const uploadUrl = await presignPut(objectKey(isVideo ? "video" : "image", name), type);
-  return NextResponse.json({ direct: true, uploadUrl, contentType: type, value: valueFor(isVideo, name) });
+  if (remote) return NextResponse.json({ direct: "blob", pathname, contentType: type, value: valueFor(isVideo, name) });
+  return NextResponse.json({ direct: false });
 }
 
 // التخزين المحلي: رفع الملف كجسم الطلب مباشرة (بث إلى القرص دون تحميله في الذاكرة)

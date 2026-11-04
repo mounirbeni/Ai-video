@@ -3,7 +3,7 @@ import { db } from "./db";
 import type { Prisma } from "@prisma/client";
 import { transaction } from "./transaction";
 
-// كل ما يمكن شراؤه يدويًا: أيام وصول تُضاف إلى accessUntil (مستقلة عن اشتراك Paddle)
+// كل ما يمكن شراؤه أو تفعيله بكود: أيام وصول تُضاف إلى accessUntil
 export const ITEMS = {
   monthly: { nameKey: "plan.monthly", usd: "$4.99", mad: 49, days: 30, supporter: false },
   yearly: { nameKey: "plan.yearly", usd: "$49.99", mad: 499, days: 365, supporter: false },
@@ -14,38 +14,12 @@ export const ITEMS = {
 export type ItemId = keyof typeof ITEMS;
 export const isItem = (v: string): v is ItemId => Object.hasOwn(ITEMS, v);
 
-export type Method = { name: string; details: string };
-
-// طرق الدفع تُكتب في لوحة الإدارة: السطر الأول اسم الطريقة، وما بعده التفاصيل، و--- بين الطرق
-export function parseMethods(text: string): Method[] {
-  return text
-    .split(/^\s*---\s*$/m)
-    .map((b) => b.trim())
-    .filter(Boolean)
-    .map((b) => {
-      const [name, ...rest] = b.split("\n");
-      return { name: name.trim(), details: rest.join("\n").trim() };
-    })
-    .filter((m) => m.name);
-}
-
-// manualMethods بالإنجليزية (الافتراضية) و manualMethodsAr بالعربية؛ العربية تعود للإنجليزية إن كانت فارغة
-export async function methodsText(lang: "en" | "ar" = "en") {
-  const key = lang === "ar" ? "manualMethodsAr" : "manualMethods";
-  return (await db.setting.findUnique({ where: { key } }))?.value ?? "";
-}
-
 export async function getWhatsapp() {
   const v = (await db.setting.findUnique({ where: { key: "whatsapp" } }))?.value ?? "";
   return v.replace(/\D/g, "");
 }
 
 export const waLink = (phone: string, text: string) => `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
-
-export async function getMethods(lang: "en" | "ar" = "en") {
-  const own = lang === "ar" ? parseMethods(await methodsText("ar")) : [];
-  return own.length ? own : parseMethods(await methodsText("en"));
-}
 
 export async function grantItem(userId: string, item: ItemId, q?: Prisma.TransactionClient): Promise<Date> {
   if (!q) return transaction((tx) => grantItem(userId, item, tx));

@@ -36,7 +36,6 @@ export async function GET(req: Request, { params: paramsPromise }: { params: Pro
   // رابط خارجي (CDN/تخزين سحابي)
   if (!src.startsWith("local:")) return NextResponse.redirect(src, 302);
 
-  // تخزين Neon: رابط موقّع قصير العمر (يدعم Range أصلًا)
   // رابط قصير العمر؛ المشغّل يجدده تلقائيًا عند انتهائه
   if (remote) {
     const res = NextResponse.redirect(await presignGet(objectKey("video", src.slice(6)), Number(process.env.STREAM_URL_TTL || 600)), 302);

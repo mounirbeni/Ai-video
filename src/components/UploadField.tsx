@@ -49,12 +49,6 @@ export default function UploadField({
       return;
     }
 
-    if (init.direct) {
-      // رفع مباشر إلى حاوية Neon عبر رابط موقّع
-      send("PUT", init.uploadUrl, file, init.contentType, (xhr) =>
-        xhr.status >= 200 && xhr.status < 300 ? setValue(init.value) : setErr(`${FAILED} (${xhr.status})`));
-      return;
-    }
     send("PUT", `/api/admin/upload?${qs}`, file, null, (xhr) => {
       try {
         const res = JSON.parse(xhr.responseText);
