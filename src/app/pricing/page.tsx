@@ -1,26 +1,21 @@
 import Link from "next/link";
 import { getUser, isSubscribed } from "@/lib/auth";
 import { PLANS } from "@/lib/plans";
-import { demoPayments, stripe } from "@/lib/stripe";
-import { paddleCheckout, paddleEnv, paddlePrice } from "@/lib/paddle";
-import { getMethods } from "@/lib/manual";
 import { paypalLive } from "@/lib/paypal";
-import PaddleCheckout from "@/components/PaddleCheckout";
 import { getT } from "@/lib/i18n/server";
 import { CheckIcon } from "@/components/Icons";
 
 export const dynamic = "force-dynamic";
 
 
-export default async function Pricing({ searchParams: searchParamsPromise }: { searchParams: Promise<{ canceled?: string; unavailable?: string }> }) {
+export default async function Pricing({ searchParams: searchParamsPromise }: { searchParams: Promise<{ unavailable?: string }> }) {
   const searchParams = await searchParamsPromise;
 
   const user = await getUser();
   const subscribed = isSubscribed(user);
   const t = (await getT());
-  // لا شركة دفع مفعّلة بعد: نعرض «قريبًا» بدل زر يقود إلى خطأ
-  const manual = !paddleCheckout && (paypalLive || (await getMethods()).length > 0);
-  const payable = demoPayments || !!stripe || paddleCheckout || manual;
+  // بلا PayPal مفعّل نعرض «قريبًا» بدل زر يقود إلى خطأ
+  const payable = paypalLive;
   const FEATURES = [t("pricing.f1"), t("pricing.f2"), t("pricing.f3"), t("pricing.f4")];
 
   return (
@@ -29,12 +24,6 @@ export default async function Pricing({ searchParams: searchParamsPromise }: { s
       <p className="mt-3 text-center text-neutral-400">{t("pricing.subtitle")}</p>
       {(searchParams.unavailable || !payable) && (
         <p className="mx-auto mt-4 max-w-xl rounded-md bg-amber-500/10 p-3 text-center text-sm text-amber-300">{t("pricing.unavailable")}</p>
-      )}
-      {searchParams.canceled && <p className="mt-4 text-center text-yellow-400">{t("pricing.canceled")}</p>}
-      {demoPayments && (
-        <p className="mx-auto mt-4 max-w-xl rounded-md bg-yellow-500/10 p-3 text-center text-sm text-yellow-300">
-          {t("pricing.demo")}
-        </p>
       )}
       <div className="mt-10 grid gap-6 md:grid-cols-2">
         {Object.values(PLANS).map((p) => (
@@ -50,19 +39,10 @@ export default async function Pricing({ searchParams: searchParamsPromise }: { s
                 <Link href="/account" className="btn-ghost w-full">{t("pricing.subscribed")}</Link>
               ) : !payable ? (
                 <button disabled className="btn-ghost w-full cursor-not-allowed opacity-60">{t("pricing.soon")}</button>
-              ) : manual ? (
+              ) : (
                 <Link href={user ? `/pay?item=${p.id}` : `/register?next=/pay?item=${p.id}`} className="btn-primary w-full">
                   {user ? t("pricing.subscribe") : t("pricing.createToSubscribe")}
                 </Link>
-              ) : user && paddleCheckout && paddlePrice(p.id) ? (
-                <PaddleCheckout priceId={paddlePrice(p.id)!} token={process.env.PADDLE_CLIENT_TOKEN!} env={paddleEnv} email={user.email} userId={user.id} />
-              ) : user ? (
-                <form action="/api/checkout" method="post">
-                  <input type="hidden" name="plan" value={p.id} />
-                  <button className="btn-primary w-full">{t("pricing.subscribe")}</button>
-                </form>
-              ) : (
-                <Link href="/register?next=/pricing" className="btn-primary w-full">{t("pricing.createToSubscribe")}</Link>
               )}
             </div>
           </div>

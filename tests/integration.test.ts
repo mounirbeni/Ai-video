@@ -20,7 +20,7 @@ import { issueToken } from "../src/lib/tokens";
 import { consumeLimit } from "../src/lib/rate-limit";
 import { POST as capture } from "../src/app/api/paypal/capture/route";
 import { POST as progress } from "../src/app/api/progress/route";
-import { redeemCode, decidePayment } from "../src/app/actions/payments";
+import { redeemCode } from "../src/app/actions/payments";
 import { updateAvatar } from "../src/app/actions/avatar";
 import { AVATARS } from "../src/lib/avatars";
 import { setWatchlist } from "../src/app/actions/library";
@@ -172,18 +172,15 @@ describe.skipIf(!enabled)("Postgres account, payment and library flows", () => {
     expect((await capture(captureRequest())).status).toBe(200);
   });
 
-  it("redeems a code once and approves a manual payment once", async () => {
+  it("redeems a code once", async () => {
     const code = "NX-TEST-AAAA-BBBB";
     await db.activationCode.create({ data: { code, item: "monthly" } });
     const form = new FormData(); form.set("code", code);
     const results = await Promise.all([redeemCode(undefined, form), redeemCode(undefined, form)]);
     expect(results.filter((r) => r?.ok)).toHaveLength(1);
-    await db.user.update({ where: { id: state.userId }, data: { role: "ADMIN" } });
-    const payment = await db.paymentRequest.create({ data: { userId: state.userId, item: "monthly", method: "test" } });
-    await Promise.all([decidePayment(payment.id, true), decidePayment(payment.id, true)]);
     const user = await db.user.findUniqueOrThrow({ where: { id: state.userId } });
-    expect(user.accessUntil!.getTime() - Date.now()).toBeGreaterThan(59.99 * 86400000);
-    expect(user.accessUntil!.getTime() - Date.now()).toBeLessThan(60.01 * 86400000);
+    expect(user.accessUntil!.getTime() - Date.now()).toBeGreaterThan(29.99 * 86400000);
+    expect(user.accessUntil!.getTime() - Date.now()).toBeLessThan(30.01 * 86400000);
   });
 
   it("keeps saved titles private to their owner and rejects invalid progress", async () => {

@@ -5,7 +5,6 @@ import { db } from "./db";
 import type { SessionUser } from "./auth";
 import { streamLimit } from "./access";
 
-export const MAX_STREAMS = Number(process.env.MAX_STREAMS || 2);
 const ACTIVE_MS = 90_000; // الجهاز نشط إن أرسل نبضة خلال 90 ثانية
 const DEVICE_COOKIE = "did";
 

@@ -1,9 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth";
-import { getMethods, getWhatsapp, isItem, ITEMS, waLink } from "@/lib/manual";
-import { submitPayment } from "@/app/actions/payments";
-import PayForm from "@/components/PayForm";
+import { getWhatsapp, isItem, ITEMS, waLink } from "@/lib/manual";
 import PayPalButtons from "@/components/PayPalButtons";
 import { centsToUsd, donationCents, paypalLive } from "@/lib/paypal";
 import { getT } from "@/lib/i18n/server";
@@ -11,7 +9,7 @@ import { CheckIcon, ClockIcon, LockIcon, ShieldIcon, SparkleIcon } from "@/compo
 
 export const dynamic = "force-dynamic";
 
-export default async function Pay({ searchParams: searchParamsPromise }: { searchParams: Promise<{ item?: string; via?: string; amount?: string }> }) {
+export default async function Pay({ searchParams: searchParamsPromise }: { searchParams: Promise<{ item?: string; amount?: string }> }) {
   const searchParams = await searchParamsPromise;
 
   const item = searchParams.item ?? "";
@@ -19,8 +17,7 @@ export default async function Pay({ searchParams: searchParamsPromise }: { searc
   if (item === "donation") return <Donation cents={donationCents(searchParams.amount)} />;
   if (!isItem(item)) redirect("/pricing");
   const t = (await getT());
-  const methods = await getMethods(t.locale);
-  if (!methods.length && !paypalLive) redirect("/pricing");
+  if (!paypalLive) redirect("/pricing");
   const it = ITEMS[item];
   const whatsapp = await getWhatsapp();
 
@@ -69,8 +66,7 @@ export default async function Pay({ searchParams: searchParamsPromise }: { searc
         </div>
 
         {/* الدفع */}
-        {paypalLive && (
-          <div className="mt-6 rounded-2xl border border-white/10 bg-neutral-900/70 p-5">
+        <div className="mt-6 rounded-2xl border border-white/10 bg-neutral-900/70 p-5">
             <p className="mb-4 flex items-center gap-2 font-semibold"><LockIcon className="h-4 w-4 text-brand" />{t("pay.secure")}</p>
             <PayPalButtons clientId={process.env.PAYPAL_CLIENT_ID!} item={item} />
             <div className="mt-4 grid grid-cols-3 gap-2 border-t border-white/10 pt-4 text-center text-[11px] text-neutral-400">
@@ -79,23 +75,6 @@ export default async function Pay({ searchParams: searchParamsPromise }: { searc
               <span className="flex flex-col items-center gap-1"><ShieldIcon className="h-4 w-4 text-brand-cyan" />{t("pay.trustPrivate")}</span>
             </div>
           </div>
-        )}
-
-      {methods.length > 0 && (
-      <div className="mt-8">
-        {paypalLive && <p className="mb-4 text-center text-sm text-neutral-500">{t("pay.orManual")}</p>}
-        <PayForm
-          action={submitPayment}
-          item={item}
-          methods={methods}
-          usd={it.usd}
-          mad={it.mad}
-          itemName={t(it.nameKey)}
-          returnUrl={`${process.env.APP_URL || ""}/pay?item=${item}&via=paypal`}
-          returned={searchParams.via === "paypal"}
-        />
-      </div>
-      )}
 
       <p className="mt-8 flex flex-wrap justify-center gap-x-4 gap-y-2 text-sm text-neutral-400">
         <Link href="/redeem" className="hover:text-white">{t("pay.haveCode")}</Link>

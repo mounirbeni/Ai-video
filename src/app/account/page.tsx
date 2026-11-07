@@ -1,8 +1,6 @@
 import Link from "next/link";
 import { requireUser, isSubscribed } from "@/lib/auth";
 import { PLANS, type PlanId } from "@/lib/plans";
-import { stripe } from "@/lib/stripe";
-import { paddle } from "@/lib/paddle";
 import { changePassword, logout, resendVerification, updateName } from "@/app/actions/auth";
 import { getT } from "@/lib/i18n/server";
 import { localizeTitle } from "@/lib/i18n/localize";
@@ -186,9 +184,6 @@ export default async function Account({ searchParams: searchParamsPromise }: { s
           <Link href="/pricing" className="btn-primary">{sub ? t("account.extend") : t("account.subscribe")}</Link>
           <Link href="/redeem" className="btn-ghost"><GiftIcon />{t("account.redeem")}</Link>
           <Link href="/support" className="btn-ghost"><HeartIcon />{t("account.supportUs")}</Link>
-          {((stripe && user.stripeCustomerId) || (paddle && user.paddleCustomerId)) && (
-            <form action="/api/portal" method="post"><button className="btn-ghost">{t("account.manage")}</button></form>
-          )}
         </div>
       </Section>
 

@@ -10,7 +10,7 @@ export async function generateMetadata() {
 
 // نموذج عام — راجعه مع مختص قانوني وعدّله بحسب بلدك ونشاطك
 const AR: [string, string][] = [
-        ["1. البيانات التي نجمعها", "• بيانات الحساب: الاسم والبريد الإلكتروني وكلمة المرور (مخزنة مشفّرة بشكل لا يمكن استرجاعه).\n• بيانات الاشتراك: الخطة وحالتها وتاريخ التجديد. بيانات البطاقة يعالجها Paddle.com (البائع الرسمي لطلباتنا) مباشرة ولا تصل إلينا.\n• بيانات المشاهدة: موضع التوقف في كل عمل لتتمكن من المتابعة."],
+        ["1. البيانات التي نجمعها", "• بيانات الحساب: الاسم والبريد الإلكتروني وكلمة المرور (مخزنة مشفّرة بشكل لا يمكن استرجاعه).\n• بيانات الاشتراك: الخطة وحالتها وتاريخ انتهاء الوصول. الدفع يعالجه PayPal مباشرة، ولا تصل إلينا بيانات بطاقتك.\n• بيانات المشاهدة: موضع التوقف في كل عمل لتتمكن من المتابعة."],
         ["2. كيف نستخدمها", "لتشغيل حسابك وتقديم المحتوى، ومعالجة الاشتراك، وإرسال رسائل ضرورية (تأكيد البريد، إعادة تعيين كلمة المرور، إشعارات الفوترة)، وتحسين الخدمة."],
         ["3. ملفات تعريف الارتباط", "نستخدم ملفات ارتباط ضرورية لإبقائك مسجلًا الدخول ولتذكّر لغتك. لا نستخدم ملفات ارتباط إعلانية."],
         ["4. مشاركة البيانات", "لا نبيع بياناتك. نشاركها فقط مع مزودي الخدمة اللازمين لتشغيل المنصة (معالجة الدفع، إرسال البريد، الاستضافة) أو عندما يلزم القانون بذلك."],
@@ -21,7 +21,7 @@ const AR: [string, string][] = [
       ];
 
 const EN: [string, string][] = [
-        ["1. Data we collect", "• Account data: your name, email and password (stored using irreversible hashing).\n• Subscription data: your plan, its status and renewal date. Card details are handled directly by Paddle.com (our Merchant of Record) and never reach us.\n• Viewing data: where you stopped in each title, so you can resume."],
+        ["1. Data we collect", "• Account data: your name, email and password (stored using irreversible hashing).\n• Subscription data: your plan, its status and when your access ends. Payments are processed directly by PayPal, and your card details never reach us.\n• Viewing data: where you stopped in each title, so you can resume."],
         ["2. How we use it", "To run your account and deliver content, process your subscription, send essential messages (email confirmation, password reset, billing notices) and improve the service."],
         ["3. Cookies", "We use essential cookies to keep you signed in and to remember your language. We do not use advertising cookies."],
         ["4. Sharing", "We do not sell your data. We share it only with the service providers needed to run the platform (payments, email, hosting) or when required by law."],
