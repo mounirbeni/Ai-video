@@ -28,9 +28,8 @@ async function call(path: string, method: "GET" | "POST", body?: unknown) {
   return { ok: res.ok, data: await res.json().catch(() => ({})) };
 }
 
-// تبرع حر: من 1 إلى 1000 دولار، يُحفظ بالسنتات
-export const DONATION_MIN = 1;
-export const DONATION_MAX = 1000;
+// تبرع حر: من 5 إلى 150 دولارًا، يُحفظ بالسنتات
+import { DONATION_MAX, DONATION_MIN } from "./donation";
 export function donationCents(v: unknown) {
   const n = Math.round(Number(String(v ?? "").replace(",", ".")) * 100);
   return Number.isFinite(n) && n >= DONATION_MIN * 100 && n <= DONATION_MAX * 100 ? n : 0;

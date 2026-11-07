@@ -2,16 +2,16 @@
 
 import { useState } from "react";
 import { useT } from "@/lib/i18n/client";
+import { DONATION_MAX, DONATION_MIN, DONATION_PRESETS } from "@/lib/donation";
 import { HeartIcon } from "./Icons";
 
-const PRESETS = [3, 5, 10, 25, 50, 100];
 
 // تبرع حر: مبالغ سريعة أو أي مبلغ يكتبه الداعم
 export default function DonateForm({ signedIn }: { signedIn: boolean }) {
   const t = useT();
   const [amount, setAmount] = useState("10");
   const n = Number(amount.replace(",", "."));
-  const valid = Number.isFinite(n) && n >= 1 && n <= 1000;
+  const valid = Number.isFinite(n) && n >= DONATION_MIN && n <= DONATION_MAX;
   const value = valid ? (Math.round(n * 100) / 100).toString() : "";
   const target = `/pay?item=donation&amount=${value}`;
   const href = signedIn ? target : `/login?next=${encodeURIComponent(target)}`;
@@ -20,7 +20,7 @@ export default function DonateForm({ signedIn }: { signedIn: boolean }) {
     <div className="mx-auto mt-10 max-w-lg rounded-2xl border border-brand-violet/40 bg-neutral-900/80 p-6 shadow-[0_0_40px_-14px_rgba(124,92,255,.7)]">
       <p className="mb-3 text-sm text-neutral-400">{t("support.amountLabel")}</p>
       <div className="grid grid-cols-3 gap-2">
-        {PRESETS.map((p) => (
+        {DONATION_PRESETS.map((p) => (
           <button
             key={p}
             type="button"
