@@ -6,9 +6,46 @@ import { readSubtitles } from "@/lib/subtitles";
 import Player from "@/components/Player";
 import { getLocale, getT } from "@/lib/i18n/server";
 import { localizeTitle } from "@/lib/i18n/localize";
+import type { Metadata } from "next";
+import ShareButton from "@/components/ShareButton";
+import { absoluteUrl, summarize } from "@/lib/share";
 import { ArrowNextIcon, ClockIcon, LockIcon } from "@/components/Icons";
 
 export const dynamic = "force-dynamic";
+
+// Link preview for a shared episode/movie: artwork, names and description only, never the video URL.
+export async function generateMetadata({ params: paramsPromise, searchParams: searchParamsPromise }: { params: Promise<{ slug: string }>; searchParams: Promise<{ ep?: string }> }): Promise<Metadata> {
+  const [params, searchParams] = await Promise.all([paramsPromise, searchParamsPromise]);
+  const raw = await db.title.findUnique({
+    where: { slug: decodeURIComponent(params.slug) },
+    include: { episodes: { orderBy: [{ season: "asc" }, { number: "asc" }] } },
+  });
+  if (!raw?.published) return {};
+  const locale = await getLocale();
+  const tr = await getT();
+  const t = localizeTitle(raw, locale);
+  const ep = t.type === "SERIES" ? t.episodes.find((e) => e.id === searchParams.ep) ?? t.episodes[0] : null;
+  const heading = ep ? tr("watch.episodeHeading", { s: ep.season, e: ep.number, name: ep.name }) : t.name;
+  const title = ep ? `${heading} · ${t.name} | ${tr("brand")}` : `${t.name} | ${tr("brand")}`;
+  const description = summarize((ep?.description || t.description) ?? "");
+  const images = [ep?.thumbUrl, t.backdropUrl, t.posterUrl].map(absoluteUrl).filter((u): u is string => !!u);
+  const path = `/watch/${encodeURIComponent(t.slug)}${ep ? `?ep=${encodeURIComponent(ep.id)}` : ""}`;
+  return {
+    title,
+    description,
+    alternates: { canonical: path },
+    openGraph: {
+      type: ep ? "video.episode" : "video.movie",
+      siteName: tr("brand"),
+      url: path,
+      title,
+      description,
+      locale: locale === "ar" ? "ar_AR" : "en_US",
+      ...(images.length && { images: [{ url: images[0], alt: heading }] }),
+    },
+    twitter: { card: images.length ? "summary_large_image" : "summary", title, description, ...(images.length && { images: [images[0]] }) },
+  };
+}
 
 export default async function Watch({ params: paramsPromise, searchParams: searchParamsPromise }: { params: Promise<{ slug: string }>; searchParams: Promise<{ ep?: string }> }) {
   const params = await paramsPromise;
@@ -80,7 +117,10 @@ export default async function Watch({ params: paramsPromise, searchParams: searc
           <h1 className="text-2xl font-bold">{ep ? tr("watch.episodeHeading", { s: ep.season, e: ep.number, name: ep.name }) : t.name}</h1>
           {ep?.description && <p className="mt-2 max-w-3xl text-neutral-400">{ep.description}</p>}
         </div>
-        {next && <Link href={`/watch/${t.slug}?ep=${next.id}`} className="btn-ghost">{tr("watch.next")}<ArrowNextIcon /></Link>}
+        <div className="flex flex-wrap items-start gap-3">
+          <ShareButton path={`/watch/${encodeURIComponent(t.slug)}${ep ? `?ep=${encodeURIComponent(ep.id)}` : ""}`} title={ep ? `${t.name} — ${ep.name}` : t.name} text={(ep?.description || t.description).slice(0, 120)} />
+          {next && <Link href={`/watch/${t.slug}?ep=${next.id}`} className="btn-ghost">{tr("watch.next")}<ArrowNextIcon /></Link>}
+        </div>
       </div>
       {t.type === "SERIES" && (
         <div className="no-scrollbar mt-8 flex gap-3 overflow-x-auto pb-2">
