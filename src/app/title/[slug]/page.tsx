@@ -6,9 +6,47 @@ import { getUser, isSubscribed } from "@/lib/auth";
 import { genresList } from "@/lib/utils";
 import { getLocale, getT } from "@/lib/i18n/server";
 import { localizeTitle } from "@/lib/i18n/localize";
+import ShareButton from "@/components/ShareButton";
+import { absoluteUrl, summarize } from "@/lib/share";
+import type { Metadata } from "next";
 import { HeartIcon, LockIcon, PlayIcon } from "@/components/Icons";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata({ params: paramsPromise }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const params = await paramsPromise;
+  const raw = await db.title.findUnique({ where: { slug: decodeURIComponent(params.slug) } });
+  if (!raw?.published) return {};
+  const locale = await getLocale();
+  const tr = await getT();
+  const t = localizeTitle(raw, locale);
+  const path = `/title/${encodeURIComponent(t.slug)}`;
+  const meta = [t.year, genresList(t.genres).slice(0, 3).join(" • ")].filter(Boolean).join(" · ");
+  const lead = t.comingSoon ? [tr("badge.soon"), t.releaseLabel].filter(Boolean).join(" · ") : meta;
+  const description = summarize([lead, t.description].filter(Boolean).join(" — "));
+  const images = [t.backdropUrl, t.posterUrl].map(absoluteUrl).filter((u): u is string => !!u).map((url) => ({ url, alt: t.name }));
+  const title = `${t.name} | ${tr("brand")}`;
+  return {
+    title,
+    description,
+    alternates: { canonical: path },
+    openGraph: {
+      type: t.type === "SERIES" ? "video.tv_show" : "video.movie",
+      siteName: tr("brand"),
+      url: path,
+      title,
+      description,
+      locale: locale === "ar" ? "ar_AR" : "en_US",
+      ...(images.length && { images }),
+    },
+    twitter: {
+      card: t.backdropUrl ? "summary_large_image" : "summary",
+      title,
+      description,
+      ...(images.length && { images: [images[0].url] }),
+    },
+  };
+}
 
 export default async function TitlePage({ params: paramsPromise }: { params: Promise<{ slug: string }> }) {
   const params = await paramsPromise;
@@ -68,6 +106,7 @@ export default async function TitlePage({ params: paramsPromise }: { params: Pro
                 <a href="#trailer" className={t.comingSoon ? "btn-primary" : "btn-ghost"}><PlayIcon />{tr("title.watchTrailer")}</a>
               )}
               {user ? <WatchlistButton titleId={t.id} saved={saved} /> : <Link className="btn-ghost" href={`/login?next=${encodeURIComponent(`/title/${t.slug}`)}`}>{tr("list.add")}</Link>}
+              <ShareButton path={`/title/${encodeURIComponent(t.slug)}`} title={t.name} text={t.description.slice(0, 120)} />
               <Link href="/support" className="btn-ghost"><HeartIcon />{tr("support.thisTitle")}</Link>
               {t.trailerUrl && !inlineTrailer && (
                 <a href={t.trailerUrl} target="_blank" rel="noreferrer" className="btn-ghost">{tr("title.trailer")}</a>

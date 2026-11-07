@@ -43,3 +43,4 @@ export const ShieldIcon = (p: P) => <Svg {...p}><path d="M12 3l8 3v6c0 4.5-3.4 8
 export const CopyIcon = (p: P) => <Svg {...p}><rect x="9" y="9" width="11" height="11" rx="2" /><path d="M5 15V5a1 1 0 0 1 1-1h10" /></Svg>;
 // يتجه تلقائيًا حسب اتجاه الصفحة (يمين في RTL)
 export const ArrowNextIcon = ({ className = "h-4 w-4" }: P) => <Svg className={`${className} rtl:-scale-x-100`}><path d="M5 12h14M13 6l6 6-6 6" /></Svg>;
+export const ShareIcon = (p: P) => <Svg {...p}><circle cx="18" cy="5" r="2.5" /><circle cx="6" cy="12" r="2.5" /><circle cx="18" cy="19" r="2.5" /><path d="M8.2 10.8l7.6-4.4M8.2 13.2l7.6 4.4" /></Svg>;

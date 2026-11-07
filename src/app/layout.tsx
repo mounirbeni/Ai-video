@@ -9,12 +9,23 @@ import BottomNav from "@/components/BottomNav";
 import InstallPrompt from "@/components/InstallPrompt";
 import { I18nProvider } from "@/lib/i18n/client";
 import { getT } from "@/lib/i18n/server";
+import { siteUrl } from "@/lib/share";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = (await getT());
+  const ar = t.locale === "ar";
   return {
+    metadataBase: new URL(siteUrl()),
     title: t("meta.title"),
     description: t("meta.description"),
+    openGraph: {
+      type: "website",
+      siteName: t("brand"),
+      title: t("meta.title"),
+      description: t("meta.description"),
+      locale: ar ? "ar_AR" : "en_US",
+    },
+    twitter: { card: "summary_large_image", title: t("meta.title"), description: t("meta.description") },
     applicationName: t("brand"),
     appleWebApp: { capable: true, title: t("brand"), statusBarStyle: "black-translucent" },
     icons: { apple: "/apple-touch-icon.png" },
