@@ -13,7 +13,15 @@ export const dynamic = "force-dynamic";
 
 export async function generateMetadata() {
   const t = (await getT());
-  return { title: `${t("support.nav")} — ${t("brand")}` };
+  const title = `${t("support.title")} · ${t("brand")}`;
+  const description = t("support.subtitle");
+  return {
+    title: `${t("support.nav")} — ${t("brand")}`,
+    description,
+    alternates: { canonical: "/support" },
+    openGraph: { type: "website", siteName: t("brand"), url: "/support", title, description, locale: t.locale === "ar" ? "ar_AR" : "en_US" },
+    twitter: { card: "summary_large_image" as const, title, description },
+  };
 }
 
 export default async function Support({ searchParams: searchParamsPromise }: { searchParams: Promise<{ thanks?: string }> }) {
